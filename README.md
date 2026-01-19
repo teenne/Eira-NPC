@@ -1,8 +1,24 @@
 # Storyteller NPCs - AI-Powered Minecraft Characters
 
+[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://minecraft.net)
+[![NeoForge](https://img.shields.io/badge/NeoForge-21.4.x-orange.svg)](https://neoforged.net)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 A NeoForge mod that adds AI-powered NPCs to Minecraft. These characters can tell stories, give hints for adventures, and have their own personalities, motives, and hidden agendas - all powered by local LLMs (Ollama) or cloud APIs (Claude, OpenAI).
 
-## Features
+ _______ _________ _______  _______    _        _______  _______ 
+(  ____ \\__   __/(  ____ )(  ___  )  ( (    /|(  ____ )(  ____ \
+| (    \/   ) (   | (    )|| (   ) |  |  \  ( || (    )|| (    \/
+| (__       | |   | (____)|| (___) |  |   \ | || (____)|| |      
+|  __)      | |   |     __)|  ___  |  | (\ \) ||  _____)| |      
+| (         | |   | (\ (   | (   ) |  | | \   || (      | |      
+| (____/\___) (___| ) \ \__| )   ( |  | )  \  || )      | (____/\
+(_______/\_______/|/   \__/|/     \|  |/    )_)|/       (_______/
+
+
+> **🎮 Transform your Minecraft experience** with NPCs that remember your conversations, have secrets to discover, and respond naturally to anything you say.
+
+## ✨ Features
 
 - 🎭 **Dynamic AI Characters** - NPCs with unique personalities, backstories, and hidden agendas
 - 🗣️ **Natural Conversations** - Powered by LLMs for dynamic, context-aware dialogue
@@ -11,6 +27,7 @@ A NeoForge mod that adds AI-powered NPCs to Minecraft. These characters can tell
 - 🔒 **Local-First** - Works with Ollama for complete privacy and offline play
 - ☁️ **Cloud Options** - Optional Claude or OpenAI integration for enhanced responses
 - 📚 **Multiple Characters** - Create and manage many different NPC personalities
+- 🌐 **Eira Relay Integration** - Connect to physical world via HTTP for immersive installations
 
 ## Requirements
 
@@ -236,6 +253,25 @@ The mod JAR will be in `build/libs/`.
 - [ ] Voice synthesis integration
 - [ ] Memory persistence across server restarts
 - [ ] Web UI for character creation
+
+## Eira Relay Integration
+
+Storyteller NPCs integrates with [Eira Relay](https://github.com/eira/eira-relay) to bridge physical and digital worlds:
+
+| Direction | Example |
+|-----------|---------|
+| **Physical → Minecraft** | QR code scan reveals NPC secret |
+| **Physical → Minecraft** | Motion sensor triggers NPC dialogue |
+| **Minecraft → Physical** | NPC warning activates alarm |
+| **Minecraft → Physical** | Quest complete changes room lighting |
+
+**Setup:**
+1. Install both Storyteller NPCs and Eira Relay
+2. Place Eira HTTP Receiver/Sender blocks near NPCs
+3. Configure webhooks in `storyteller-common.toml`
+4. Add `external_triggers` and `story_triggers` to character JSON
+
+See [Eira Integration Guide](docs/EIRA_INTEGRATION.md) for full documentation.
 
 ## License
 

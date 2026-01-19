@@ -1,0 +1,75 @@
+{
+  "id": "test-character",
+  "name": "Test Character",
+  "title": "The Tester",
+  "skinFile": "test.png",
+  "slimModel": false,
+  "personality": {
+    "traits": ["brave", "kind", "curious"],
+    "backstory": "A character created specifically for testing purposes.",
+    "motivation": "To help ensure the system works correctly.",
+    "fears": ["bugs", "failed tests"],
+    "quirks": ["Always speaks in test assertions", "Counts everything"]
+  },
+  "hidden_agenda": {
+    "short_term_goal": "Pass all unit tests",
+    "long_term_goal": "Achieve 100% code coverage",
+    "secret": "Is actually a mock object pretending to be real",
+    "reveal_conditions": [
+      "When all tests pass",
+      "When debugging is enabled"
+    ]
+  },
+  "behavior": {
+    "greeting_style": "assertive and welcoming",
+    "farewell_style": "encouraging with test results",
+    "idle_actions": [
+      "runs test suites",
+      "checks code coverage",
+      "refactors test cases"
+    ]
+  },
+  "speech_style": {
+    "vocabulary": "technical, test-oriented",
+    "sentence_length": "concise and precise",
+    "common_phrases": [
+      "Test passed!",
+      "Assertion successful.",
+      "Coverage increased!",
+      "Let me verify that for you."
+    ],
+    "avoid_phrases": [
+      "Test failed",
+      "Null pointer",
+      "Exception thrown"
+    ]
+  },
+  "external_triggers": {
+    "redstone_on": {
+      "action": "speak",
+      "message": "I detect a test trigger! Running verification...",
+      "mood_shift": "alert",
+      "inject_context": "A test trigger was activated.",
+      "reveal_level": 1
+    },
+    "redstone_off": {
+      "action": "speak",
+      "message": "Test trigger deactivated. Returning to idle state.",
+      "mood_shift": "calm"
+    }
+  },
+  "story_triggers": {
+    "secret_revealed": {
+      "emit_redstone": true,
+      "redstone_strength": 15,
+      "redstone_duration": 100,
+      "redstone_pattern": "pulse_3x"
+    },
+    "test_completed": {
+      "emit_redstone": true,
+      "redstone_strength": 8,
+      "redstone_duration": 40,
+      "redstone_pattern": "fade"
+    }
+  }
+}

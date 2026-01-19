@@ -1,0 +1,35 @@
+# Gradle
+.gradle/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.settings/
+.classpath
+.project
+*.launch
+.metadata
+
+# Runtime
+run/
+run-server/
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets (API keys in config)
+**/storyteller-common.toml
+
+# Build output
+*.jar
+!gradle/wrapper/*.jar
+
+# Temp files
+tmpclaude-*
+nul

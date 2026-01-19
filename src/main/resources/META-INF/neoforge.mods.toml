@@ -1,0 +1,29 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+issueTrackerURL = "https://github.com/yourusername/storyteller/issues"
+
+[[mods]]
+modId = "storyteller"
+version = "${file.jarVersion}"
+displayName = "Storyteller NPCs"
+description = '''
+AI-powered NPCs that tell stories, give hints, and have their own personalities and hidden agendas.
+Uses local LLMs (Ollama) or cloud APIs (Claude, OpenAI) for dynamic conversations.
+'''
+authors = "Your Name"
+displayURL = "https://github.com/yourusername/storyteller"
+
+[[dependencies.storyteller]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.4,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.storyteller]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.4,)"
+ordering = "NONE"
+side = "BOTH"
