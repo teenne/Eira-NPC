@@ -1,296 +1,204 @@
-# Storyteller NPCs - AI-Powered Minecraft Characters
+# Storyteller NPCs
 
 [![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://minecraft.net)
 [![NeoForge](https://img.shields.io/badge/NeoForge-21.4.x-orange.svg)](https://neoforged.net)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A NeoForge mod that adds AI-powered NPCs to Minecraft. These characters can tell stories, give hints for adventures, and have their own personalities, motives, and hidden agendas - all powered by local LLMs (Ollama) or cloud APIs (Claude, OpenAI).
+**AI-powered NPCs for Minecraft that actually talk back.**
 
- _______ _________ _______  _______    _        _______  _______ 
-(  ____ \\__   __/(  ____ )(  ___  )  ( (    /|(  ____ )(  ____ \
-| (    \/   ) (   | (    )|| (   ) |  |  \  ( || (    )|| (    \/
-| (__       | |   | (____)|| (___) |  |   \ | || (____)|| |      
-|  __)      | |   |     __)|  ___  |  | (\ \) ||  _____)| |      
-| (         | |   | (\ (   | (   ) |  | | \   || (      | |      
-| (____/\___) (___| ) \ \__| )   ( |  | )  \  || )      | (____/\
-(_______/\_______/|/   \__/|/     \|  |/    )_)|/       (_______/
+Storyteller NPCs adds characters to your Minecraft world that you can have real conversations with. Ask them questions, hear their stories, discover their secrets. Each NPC has their own personality, memories, and hidden motives - powered by large language models running locally or in the cloud.
 
+---
 
-> **🎮 Transform your Minecraft experience** with NPCs that remember your conversations, have secrets to discover, and respond naturally to anything you say.
+## What is this?
 
-> **📖 New to Storyteller?** Check out the [Complete User Guide](docs/USER_GUIDE.md) for step-by-step setup instructions.
+Vanilla Minecraft villagers are disappointing. They grunt, they trade, they get killed by zombies. They don't *talk*.
 
-## ✨ Features
+Storyteller NPCs fixes that. You spawn an NPC, give them a personality, and have actual conversations:
 
-- 🎭 **Dynamic AI Characters** - NPCs with unique personalities, backstories, and hidden agendas
-- 🗣️ **Natural Conversations** - Powered by LLMs for dynamic, context-aware dialogue
-- 🌍 **World-Aware** - NPCs know about biomes, time of day, weather, and your condition
-- 🎨 **Custom Skins** - Use any Minecraft player skin for your NPCs
-- 🔒 **Local-First** - Works with Ollama for complete privacy and offline play
-- ☁️ **Cloud Options** - Optional Claude or OpenAI integration for enhanced responses
-- 📚 **Multiple Characters** - Create and manage many different NPC personalities
-- 🌐 **Eira Relay Integration** - Connect to physical world via HTTP for immersive installations
+```
+You: "What brings you to this village?"
 
-## Requirements
+Eldric: "Ah, a curious soul. I came seeking the ruins beneath
+the mountain - they say an artifact lies buried there. But the
+nights grow dangerous, and I find myself... lingering. Tell me,
+have you seen anything unusual in these lands?"
+```
 
-- Minecraft 1.21.4
-- NeoForge 21.4.x
-- Java 21
-- **For local LLM**: [Ollama](https://ollama.ai/) running on your machine
+The NPC remembers what you've discussed. They know if it's raining. They notice you're hurt. They have secrets they'll only reveal after you've earned their trust.
+
+---
+
+## Why use it?
+
+**For adventure map creators:** Build immersive quests with NPCs that guide players through stories, give contextual hints, and react to player choices - without scripting every possible dialogue.
+
+**For server owners:** Add memorable characters to spawn towns, quest hubs, or special locations. NPCs can serve as guides, merchants with personality, or mysterious figures with secrets to uncover.
+
+**For modpack developers:** Create narrative experiences that feel alive. NPCs respond naturally to any player input, making your world feel less like a game and more like a story.
+
+**For solo players:** Give your world some company. Have someone to talk to on those long mining trips. Create characters that feel like actual inhabitants of your world.
+
+---
+
+## How it works
+
+1. **You spawn an NPC** with `/storyteller spawn`
+2. **Right-click to chat** - a dialogue screen opens
+3. **Type anything** - your message goes to an AI language model
+4. **Get a response** - the NPC replies in character, aware of time, weather, biome, and your conversation history
+
+The AI runs locally via [Ollama](https://ollama.ai/) (free, private, no internet needed) or through cloud APIs (Claude, OpenAI) for stronger responses.
+
+---
+
+## Features
+
+- **Real conversations** - NPCs respond to anything you type, not canned dialogue
+- **Persistent memory** - They remember past conversations with you
+- **World awareness** - NPCs know biome, time of day, weather, and your health
+- **Custom personalities** - Define traits, backstories, speech patterns, and secrets
+- **Custom skins** - Any Minecraft skin works
+- **Local-first** - Ollama runs on your machine, completely private
+- **Cloud options** - Claude and OpenAI for enhanced responses
+- **Eira integration** - Bridge to physical world via redstone and HTTP webhooks
+
+---
 
 ## Quick Start
 
-### 1. Install Ollama (Recommended)
+### 1. Install Ollama
+
+Download from [ollama.ai](https://ollama.ai/), then:
 
 ```bash
-# Install Ollama from https://ollama.ai/
-
-# Pull the recommended model
-ollama pull mistral:7b-instruct
-
-# Start Ollama (if not running as service)
+ollama pull llama3.1:8b
 ollama serve
 ```
 
-### 2. Install the Mod
+### 2. Install the mod
 
-1. Download the mod JAR from releases
-2. Place in your `mods/` folder
-3. Launch Minecraft with NeoForge 1.21.4
+Drop the JAR in your `mods/` folder. Requires NeoForge 21.4.x and Java 21.
 
-### 3. Spawn Your First NPC
+### 3. Spawn an NPC
 
 ```
 /storyteller spawn
 ```
 
-Right-click the NPC to start chatting!
+Right-click to start talking.
+
+---
 
 ## Configuration
 
-Configuration files are created in `config/storyteller/`:
-
-```
-config/storyteller/
-├── storyteller-common.toml    # LLM and NPC settings
-├── storyteller-client.toml    # Client-side settings
-├── characters/                 # Character JSON files
-│   └── [character-id].json
-└── skins/                      # Custom skin PNG files
-    └── README.txt
-```
-
-### LLM Provider Settings
-
-Edit `storyteller-common.toml`:
+After first launch, edit `config/storyteller-common.toml`:
 
 ```toml
 [llm]
-# Options: OLLAMA, CLAUDE, OPENAI
-provider = "OLLAMA"
+provider = "OLLAMA"  # or CLAUDE, OPENAI
 
 [llm.ollama]
 endpoint = "http://localhost:11434"
-model = "mistral:7b-instruct"
-timeout = 60
-
-[llm.claude]
-apiKey = ""  # Your Anthropic API key
-model = "claude-sonnet-4-20250514"
-
-[llm.openai]
-apiKey = ""  # Your OpenAI API key
-model = "gpt-4o"
+model = "llama3.1:8b"
 ```
 
-### Recommended Ollama Models
+For Claude or OpenAI, add your API key to the respective section.
 
-| Model | Size | Best For |
-|-------|------|----------|
-| `mistral:7b-instruct` | ~4GB | **Recommended** - Great roleplay, fast |
-| `llama3.1:8b` | ~4.5GB | Good general purpose |
-| `nous-hermes2:10.7b` | ~6GB | Best roleplay quality |
-| `llama3.2:3b` | ~2GB | Lower spec machines |
+---
 
 ## Creating Characters
 
-### Using Commands
-
-```bash
-# Create a new character with default template
-/storyteller create "Mysterious Wizard"
-
-# List all characters
-/storyteller list
-
-# Check status
-/storyteller status
-```
-
-### Manual JSON Creation
-
-Create a JSON file in `config/storyteller/characters/`:
+Create JSON files in `config/storyteller/characters/`:
 
 ```json
 {
-  "id": "unique-id",
-  "name": "Character Name",
-  "title": "The Character's Title",
-  "skinFile": "myskin.png",
-  "slimModel": false,
-  
+  "id": "village-elder",
+  "name": "Old Mira",
+  "title": "The Village Elder",
+
   "personality": {
-    "traits": ["wise", "mysterious", "helpful"],
-    "backstory": "A traveler from distant lands...",
-    "motivation": "Seeking ancient knowledge...",
-    "fears": ["the void", "being forgotten"],
-    "quirks": ["speaks in riddles", "collects emeralds"]
+    "traits": ["wise", "cautious", "kind"],
+    "backstory": "Lived in this village for 60 years. Remembers when the forest was safe.",
+    "motivation": "Protect the village and its people",
+    "quirks": ["calls everyone 'child'", "always mentions the weather"]
   },
-  
+
   "hidden_agenda": {
-    "short_term_goal": "Gain the player's trust",
-    "long_term_goal": "Guide them to find the artifact",
-    "secret": "Is actually cursed and needs help",
-    "reveal_conditions": [
-      "After many conversations",
-      "When player shows exceptional kindness"
-    ]
+    "secret": "Knows the location of the ancient temple but won't reveal it until she trusts you",
+    "reveal_conditions": ["After 5+ conversations", "If player helps defend the village"]
   },
-  
+
   "speech_style": {
-    "vocabulary": "archaic, poetic",
-    "common_phrases": ["Ah, young traveler...", "The blocks remember..."],
-    "avoid_phrases": ["As an AI", "I cannot"]
+    "vocabulary": "simple, folksy",
+    "common_phrases": ["In my day...", "The old ways taught us..."]
   }
 }
 ```
 
-### Custom Skins
+Or use the command: `/storyteller create "Old Mira"`
 
-1. Download or create a Minecraft skin (64x64 PNG)
-2. Place in `config/storyteller/skins/`
-3. Reference in character JSON: `"skinFile": "filename.png"`
-
-Skin sources:
-- [NameMC](https://namemc.com/)
-- [The Skindex](https://www.minecraftskins.com/)
-- [Planet Minecraft](https://www.planetminecraft.com/skins/)
+---
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `/storyteller spawn [character]` | Spawn an NPC (default or named) |
-| `/storyteller list` | List all characters |
-| `/storyteller skins` | List available skin files |
+| `/storyteller` | Show help |
+| `/storyteller spawn [name]` | Spawn default or named NPC |
+| `/storyteller list` | List available characters |
 | `/storyteller create <name>` | Create new character template |
-| `/storyteller reload` | Reload all configurations |
-| `/storyteller status` | Show LLM and mod status |
+| `/storyteller reload` | Reload configurations |
+| `/storyteller status` | Show LLM connection status |
 
-## How It Works
+---
 
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────┐
-│   Player    │────▶│ Storyteller  │────▶│   Ollama    │
-│  (Client)   │◀────│    NPC       │◀────│   (LLM)     │
-└─────────────┘     └──────────────┘     └─────────────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │   Context    │
-                    │  • Biome     │
-                    │  • Time      │
-                    │  • Weather   │
-                    │  • History   │
-                    └──────────────┘
-```
+## Recommended Models
 
-1. Player right-clicks NPC → Opens chat screen
-2. Player types message → Sent to server
-3. Server builds context (world state, conversation history)
-4. Request sent to LLM with character system prompt
-5. Response returned and displayed to player
-6. Conversation history maintained per player
+| Model | VRAM | Notes |
+|-------|------|-------|
+| `llama3.1:8b` | ~5GB | Good balance of speed and quality |
+| `mistral:7b-instruct` | ~4GB | Fast, good for roleplay |
+| `llama3.2:3b` | ~2GB | For lower-spec machines |
 
-## Tips for Great Characters
-
-1. **Be Specific** - Detailed backstories lead to consistent roleplay
-2. **Hidden Agendas** - Give NPCs secrets to make conversations intriguing  
-3. **Speech Patterns** - Unique phrases make characters memorable
-4. **World Integration** - Reference Minecraft elements naturally
-5. **Gradual Reveals** - Let secrets emerge over multiple conversations
+---
 
 ## Troubleshooting
 
-### "Ollama is not available"
-- Ensure Ollama is running: `ollama serve`
-- Check the endpoint in config (default: `http://localhost:11434`)
-- Verify the model is downloaded: `ollama list`
+**NPC says "Ollama is not available"**
+- Run `ollama serve` in a terminal
+- Check `ollama list` shows your model
 
-### Slow Responses
-- Use a smaller model (`llama3.2:3b`)
-- Reduce `maxConversationHistory` in config
-- Ensure Ollama has enough RAM
+**Responses are slow**
+- Use a smaller model
+- Make sure Ollama has enough RAM
+- Responses are limited to ~150 tokens by default
 
-### NPC Won't Respond
-- Check `/storyteller status` for LLM connection
+**NPC won't respond**
+- Check `/storyteller status`
 - Look at server logs for errors
-- Ensure player is within 10 blocks of NPC
+
+---
+
+## Documentation
+
+- [User Guide](docs/USER_GUIDE.md) - Complete setup instructions
+- [Character Guide](docs/CHARACTER_GUIDE.md) - Creating custom NPCs
+- [Eira Integration](docs/EIRA_INTEGRATION.md) - Physical world bridge
+- [Architecture](docs/ARCHITECTURE.md) - Technical details
+
+---
 
 ## Building from Source
 
 ```bash
-git clone https://github.com/yourusername/storyteller
-cd storyteller
+git clone https://github.com/teenne/Eira-NPC.git
+cd Eira-NPC
 ./gradlew build
 ```
 
-The mod JAR will be in `build/libs/`.
-
-## Future Plans
-
-- [ ] Multi-loader support (Fabric/Forge)
-- [ ] Quests and objectives system
-- [ ] NPC-to-NPC conversations
-- [ ] Voice synthesis integration
-- [ ] Memory persistence across server restarts
-- [ ] Web UI for character creation
-
-## Eira Relay Integration
-
-Storyteller NPCs integrates with [Eira Relay](https://github.com/eira/eira-relay) to bridge physical and digital worlds:
-
-| Direction | Example |
-|-----------|---------|
-| **Physical → Minecraft** | QR code scan reveals NPC secret |
-| **Physical → Minecraft** | Motion sensor triggers NPC dialogue |
-| **Minecraft → Physical** | NPC warning activates alarm |
-| **Minecraft → Physical** | Quest complete changes room lighting |
-
-**Setup:**
-1. Install both Storyteller NPCs and Eira Relay
-2. Place Eira HTTP Receiver/Sender blocks near NPCs
-3. Configure webhooks in `storyteller-common.toml`
-4. Add `external_triggers` and `story_triggers` to character JSON
-
-See [Eira Integration Guide](docs/EIRA_INTEGRATION.md) for full documentation.
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| [User Guide](docs/USER_GUIDE.md) | Complete setup and usage instructions |
-| [Character Guide](docs/CHARACTER_GUIDE.md) | Creating custom NPC characters |
-| [FAQ](docs/FAQ.md) | Frequently asked questions |
-| [Architecture](docs/ARCHITECTURE.md) | Technical implementation details |
-| [Eira Integration](docs/EIRA_INTEGRATION.md) | Physical world bridge |
+---
 
 ## License
 
-MIT License - See LICENSE file
-
-## Credits
-
-- Built for NeoForge 1.21.4
-- LLM integration via Ollama, Anthropic Claude, and OpenAI
-- Inspired by the desire for more immersive Minecraft NPCs
+MIT License - see [LICENSE](LICENSE)
