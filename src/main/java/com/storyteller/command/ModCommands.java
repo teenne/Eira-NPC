@@ -46,7 +46,8 @@ public class ModCommands {
         
         dispatcher.register(Commands.literal("storyteller")
             .requires(source -> source.hasPermission(2))
-            
+            .executes(ModCommands::showHelp)
+
             // Spawn NPC
             .then(Commands.literal("spawn")
                 .executes(ModCommands::spawnDefault)
@@ -226,12 +227,12 @@ public class ModCommands {
     
     private static int showStatus(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
-        
+
         var llmManager = StorytellerMod.getInstance().getLLMManager();
         var npcManager = StorytellerMod.getInstance().getNPCManager();
-        
+
         source.sendSuccess(() -> Component.literal("§6=== Storyteller Status ==="), false);
-        
+
         // LLM Status
         if (llmManager.isAvailable()) {
             source.sendSuccess(() -> Component.literal(
@@ -242,19 +243,35 @@ public class ModCommands {
                 "§cLLM Provider: Not connected"
             ), false);
         }
-        
+
         // Character count
         int charCount = npcManager.getAllCharacters().size();
         source.sendSuccess(() -> Component.literal(
             "§eCharacters loaded: " + charCount
         ), false);
-        
+
         // Skin count
         int skinCount = npcManager.getAvailableSkins().length;
         source.sendSuccess(() -> Component.literal(
             "§eCustom skins available: " + skinCount
         ), false);
-        
+
+        return 1;
+    }
+
+    private static int showHelp(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        source.sendSuccess(() -> Component.literal("§6=== Storyteller NPC Commands ==="), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller spawn §7- Spawn default NPC"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller spawn <name> §7- Spawn specific character"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller list §7- List available characters"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller skins §7- List available skins"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller create <name> §7- Create new character"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller reload §7- Reload configurations"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller status §7- Show LLM connection status"), false);
+        source.sendSuccess(() -> Component.literal("§7Right-click an NPC to start chatting!"), false);
+
         return 1;
     }
 }

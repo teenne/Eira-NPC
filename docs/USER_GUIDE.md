@@ -1,4 +1,4 @@
-# Storyteller NPCs - Complete User Guide
+stor# Storyteller NPCs - Complete User Guide
 
 A comprehensive guide to installing, configuring, and using the Storyteller NPCs mod for Minecraft 1.21.4.
 
