@@ -2,7 +2,9 @@ package com.storyteller.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.storyteller.StorytellerMod;
+import com.storyteller.config.ModConfig;
 import com.storyteller.entity.StorytellerNPC;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -10,7 +12,9 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
 import net.minecraft.client.renderer.entity.state.PlayerRenderState;
 import net.minecraft.client.resources.DefaultPlayerSkin;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.fml.loading.FMLPaths;
 
 import javax.imageio.ImageIO;
@@ -72,6 +76,43 @@ public class StorytellerNPCRenderer extends MobRenderer<StorytellerNPC, Storytel
         state.skinFile = entity.getSkinFile();
         state.slimModel = entity.isSlimModel();
         state.thinking = entity.isThinking();
+
+        // Store entity position for particle spawning
+        state.entityX = entity.getX();
+        state.entityY = entity.getY();
+        state.entityZ = entity.getZ();
+    }
+
+    @Override
+    public void render(StorytellerNPCRenderState state, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
+        super.render(state, poseStack, bufferSource, packedLight);
+
+        // Spawn thinking particles
+        if (state.thinking && ModConfig.CLIENT.showThinkingParticles.get()) {
+            spawnThinkingParticles(state);
+        }
+    }
+
+    /**
+     * Spawn enchantment-like particles above NPC's head when thinking
+     */
+    private void spawnThinkingParticles(StorytellerNPCRenderState state) {
+        var level = Minecraft.getInstance().level;
+        if (level == null) return;
+
+        // Only spawn particles occasionally (not every frame)
+        if (level.random.nextFloat() > 0.15f) return;
+
+        double x = state.entityX + (level.random.nextDouble() - 0.5) * 0.6;
+        double y = state.entityY + 2.0 + level.random.nextDouble() * 0.3;
+        double z = state.entityZ + (level.random.nextDouble() - 0.5) * 0.6;
+
+        // Spawn enchantment glint particles that float upward
+        level.addParticle(
+            ParticleTypes.ENCHANT,
+            x, y, z,
+            0.0, 0.1, 0.0
+        );
     }
 
     /**
