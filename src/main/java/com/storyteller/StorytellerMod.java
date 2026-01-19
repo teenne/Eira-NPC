@@ -15,6 +15,7 @@ import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,16 @@ public class StorytellerMod {
         llmManager.shutdown();
         npcManager.saveNPCs();
         eiraManager.shutdown();
+    }
+
+    @SubscribeEvent
+    public void onServerTick(ServerTickEvent.Post event) {
+        // Tick Eira integration for redstone detection (every 4 ticks to reduce overhead)
+        if (event.getServer().getTickCount() % 4 == 0) {
+            event.getServer().getAllLevels().forEach(level -> {
+                eiraManager.tick(level);
+            });
+        }
     }
     
     public static StorytellerMod getInstance() {
