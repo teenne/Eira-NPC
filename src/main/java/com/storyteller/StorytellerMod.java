@@ -58,13 +58,17 @@ public class StorytellerMod {
         event.enqueueWork(() -> {
             ModNetwork.register();
             LOGGER.info("Storyteller network registered");
+
+            // Initialize LLM early so warmup happens while player is in menus
+            // This gives ~10-30 seconds head start before server even starts
+            LOGGER.info("Pre-initializing LLM provider for faster NPC responses...");
+            llmManager.initialize();
         });
     }
-    
+
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        LOGGER.info("Storyteller: Server starting, initializing LLM connection...");
-        llmManager.initialize();
+        LOGGER.info("Storyteller: Server starting...");
         npcManager.loadNPCs();
         eiraManager.initialize();
     }

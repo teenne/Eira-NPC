@@ -25,6 +25,7 @@ public class OllamaProvider implements LLMProvider {
 
     private HttpClient client;
     private final AtomicBoolean available = new AtomicBoolean(false);
+    private final AtomicBoolean warmedUp = new AtomicBoolean(false);
 
     private String endpoint;
     private String model;
@@ -84,6 +85,24 @@ public class OllamaProvider implements LLMProvider {
         return CompletableFuture.supplyAsync(() -> {
             if (!available.get()) {
                 return "[Ollama is not available. Please check the server logs.]";
+            }
+
+            // Wait for warmup to complete (max 60 seconds)
+            if (!warmedUp.get()) {
+                StorytellerMod.LOGGER.info("Waiting for Ollama warmup to complete...");
+                int waited = 0;
+                while (!warmedUp.get() && waited < 60000) {
+                    try {
+                        Thread.sleep(500);
+                        waited += 500;
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        break;
+                    }
+                }
+                if (!warmedUp.get()) {
+                    StorytellerMod.LOGGER.warn("Warmup timed out, proceeding anyway");
+                }
             }
 
             try {
@@ -209,9 +228,18 @@ public class OllamaProvider implements LLMProvider {
 
                 long elapsed = System.currentTimeMillis() - startTime;
                 StorytellerMod.LOGGER.info("Ollama model warmup complete in {}ms - first NPC interaction will be fast!", elapsed);
+                warmedUp.set(true);
             } catch (Exception e) {
                 StorytellerMod.LOGGER.warn("Ollama warmup failed (non-critical): {}", e.getMessage());
+                warmedUp.set(true); // Allow requests even if warmup failed
             }
         });
+    }
+
+    /**
+     * Check if the model has been warmed up and is ready for fast responses
+     */
+    public boolean isWarmedUp() {
+        return warmedUp.get();
     }
 }
