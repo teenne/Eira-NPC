@@ -180,6 +180,42 @@ Or use the command: `/storyteller create "Old Mira"`
 
 ---
 
+## Part of the Eira Ecosystem
+
+Storyteller NPCs is part of **Eira** - a collection of Minecraft mods for immersive educational experiences, maintained by a non-commercial educational organization.
+
+| Mod | Purpose | Repository |
+|-----|---------|------------|
+| **Eira Core** | Foundation - event bus, teams, story framework, API server | [teenne/eira-core](https://github.com/teenne/eira-core) |
+| **Eira Relay** | Physical bridge - HTTP blocks convert webhooks ↔ redstone | [Narratimo/HappyHttpMod](https://github.com/Narratimo/HappyHttpMod) |
+| **Eira NPC** | AI characters - LLM-powered dynamic conversations | This repository |
+
+### How they work together
+
+**Physical → Minecraft:** A visitor scans a QR code → webhook hits Eira Relay's HTTP Receiver block → redstone signal triggers NPC dialogue → the NPC "senses" something and speaks to nearby players.
+
+**Minecraft → Physical:** Player discovers an NPC's secret → NPC emits redstone → Eira Relay's HTTP Sender fires webhook → room lights change color or a display updates.
+
+This enables escape rooms, museum exhibits, educational installations, and interactive storytelling that spans both digital and physical spaces.
+
+### Enabling Eira Integration
+
+In `storyteller-common.toml`:
+
+```toml
+[integration]
+eiraEnabled = true
+emitRedstoneOnEvents = true
+
+[integration.webhooks]
+enabled = true
+onSecretRevealed = "https://your-server.com/webhook"
+```
+
+See [Eira Integration Guide](docs/EIRA_INTEGRATION.md) for full setup.
+
+---
+
 ## Documentation
 
 - [User Guide](docs/USER_GUIDE.md) - Complete setup instructions
