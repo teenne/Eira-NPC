@@ -182,6 +182,9 @@ public class StorytellerNPC extends PathfinderMob {
         setThinking(true);
         thinkingStartTime = System.currentTimeMillis();
         this.getNavigation().stop(); // Stop any movement
+
+        StorytellerMod.LOGGER.info("Processing message from {}: {}", player.getName().getString(),
+            message.length() > 50 ? message.substring(0, 50) + "..." : message);
         
         // Build context
         NPCCharacter npcChar = getCharacter();
@@ -195,9 +198,16 @@ public class StorytellerNPC extends PathfinderMob {
         List<ChatMessage> history = new ArrayList<>(
             ConversationHistory.getHistory(this.getUUID(), player.getUUID())
         );
-        
-        // Add the new message
-        ChatMessage userMessage = new ChatMessage(ChatMessage.Role.USER, message);
+
+        // Handle greeting request - NPC initiates conversation
+        boolean isGreeting = message.equals("[GREETING]");
+        String actualMessage = isGreeting
+            ? "A visitor approaches. Greet them in character with a brief, intriguing opening line."
+            : message;
+
+        // Add the new message to the list sent to LLM
+        // (we won't persist greeting prompts to conversation history, but LLM needs something to respond to)
+        ChatMessage userMessage = new ChatMessage(ChatMessage.Role.USER, actualMessage);
         history.add(userMessage);
         
         // Build system prompt
@@ -211,14 +221,18 @@ public class StorytellerNPC extends PathfinderMob {
         }
         
         // Send to LLM
+        final boolean saveToHistory = !isGreeting;
+        final ChatMessage originalUserMessage = isGreeting ? null : userMessage;
         StorytellerMod.getInstance().getLLMManager()
             .chat(systemPrompt, history)
             .thenAccept(response -> {
                 // Back on server, send response to player
                 if (player.isAlive() && player.connection != null) {
-                    // Save to history
-                    ConversationHistory.addMessage(this.getUUID(), player.getUUID(), userMessage);
-                    ConversationHistory.addMessage(this.getUUID(), player.getUUID(), 
+                    // Save to history (skip for greeting requests)
+                    if (saveToHistory && originalUserMessage != null) {
+                        ConversationHistory.addMessage(this.getUUID(), player.getUUID(), originalUserMessage);
+                    }
+                    ConversationHistory.addMessage(this.getUUID(), player.getUUID(),
                         new ChatMessage(ChatMessage.Role.ASSISTANT, response));
                     ConversationHistory.incrementConversationCount(this.getUUID(), player.getUUID());
                     

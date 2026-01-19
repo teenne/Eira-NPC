@@ -32,6 +32,7 @@ public class NPCChatScreen extends Screen {
     private final List<ChatEntry> chatHistory = new ArrayList<>();
     private boolean awaitingResponse = false;
     private int scrollOffset = 0;
+    private boolean greetingRequested = false;
     
     // Layout constants
     private static final int PADDING = 10;
@@ -75,13 +76,15 @@ public class NPCChatScreen extends Screen {
             .bounds(centerX - chatWidth / 2 + inputWidth + 5, inputY, BUTTON_WIDTH, INPUT_HEIGHT)
             .build();
         this.addRenderableWidget(sendButton);
-        
-        // Initial greeting if no history
-        if (chatHistory.isEmpty()) {
-            chatHistory.add(new ChatEntry(npcName, "Ah, a visitor! How may I help you today?", false));
-        }
     }
-    
+
+    private void requestGreeting() {
+        // Send a greeting request to server - NPC will respond via LLM
+        PacketDistributor.sendToServer(new PlayerChatPacket(entityId, "[GREETING]"));
+        awaitingResponse = true;
+        chatHistory.add(new ChatEntry(npcName, "...", false));
+    }
+
     private void onSend(Button button) {
         sendMessage();
     }
@@ -136,6 +139,12 @@ public class NPCChatScreen extends Screen {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // Request greeting on first render (after screen is fully initialized)
+        if (!greetingRequested && chatHistory.isEmpty()) {
+            greetingRequested = true;
+            requestGreeting();
+        }
+
         // Render our custom background (calls override above)
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
 
