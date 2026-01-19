@@ -62,12 +62,17 @@ public class StorytellerNPC extends PathfinderMob {
     private static final EntityDataAccessor<Boolean> DATA_SLIM_MODEL = SynchedEntityData.defineId(
         StorytellerNPC.class, EntityDataSerializers.BOOLEAN
     );
-    
+    private static final EntityDataAccessor<Boolean> DATA_IN_CONVERSATION = SynchedEntityData.defineId(
+        StorytellerNPC.class, EntityDataSerializers.BOOLEAN
+    );
+
     // Server-side only
     private NPCCharacter character;
     private final AtomicBoolean processingRequest = new AtomicBoolean(false);
     private UUID currentlyTalkingTo = null;
     private long thinkingStartTime = 0;
+    private long conversationStartTime = 0;
+    private static final long CONVERSATION_TIMEOUT_MS = 60000; // 60 seconds without interaction ends conversation
     
     // Eira integration state
     private boolean emittingRedstone = false;
@@ -94,6 +99,7 @@ public class StorytellerNPC extends PathfinderMob {
         builder.define(DATA_IS_THINKING, false);
         builder.define(DATA_SKIN_FILE, "");
         builder.define(DATA_SLIM_MODEL, false);
+        builder.define(DATA_IN_CONVERSATION, false);
     }
     
     @Override
@@ -134,10 +140,14 @@ public class StorytellerNPC extends PathfinderMob {
             getSkinFile(),
             isSlimModel()
         ));
-        
-        // Look at the player
+
+        // Start conversation - NPC stops moving and looks at player
+        setInConversation(true);
+        currentlyTalkingTo = player.getUUID();
+        conversationStartTime = System.currentTimeMillis();
+        this.getNavigation().stop();
         this.getLookControl().setLookAt(player, 30.0F, 30.0F);
-        
+
         return InteractionResult.CONSUME;
     }
     
@@ -158,8 +168,11 @@ public class StorytellerNPC extends PathfinderMob {
         
         processingRequest.set(true);
         currentlyTalkingTo = player.getUUID();
+        conversationStartTime = System.currentTimeMillis(); // Refresh conversation timeout
+        setInConversation(true);
         setThinking(true);
         thinkingStartTime = System.currentTimeMillis();
+        this.getNavigation().stop(); // Stop any movement
         
         // Build context
         NPCCharacter npcChar = getCharacter();
@@ -229,13 +242,48 @@ public class StorytellerNPC extends PathfinderMob {
     @Override
     public void tick() {
         super.tick();
-        
+
+        // Server-side: manage conversation state
+        if (!level().isClientSide()) {
+            if (isInConversation()) {
+                // Check for conversation timeout
+                if (System.currentTimeMillis() - conversationStartTime > CONVERSATION_TIMEOUT_MS) {
+                    endConversation();
+                } else {
+                    // Stop any movement while in conversation
+                    this.getNavigation().stop();
+
+                    // Keep looking at the player we're talking to
+                    if (currentlyTalkingTo != null && level() instanceof ServerLevel serverLevel) {
+                        ServerPlayer player = serverLevel.getServer().getPlayerList()
+                            .getPlayer(currentlyTalkingTo);
+                        if (player != null && player.distanceToSqr(this) < 100) {
+                            this.getLookControl().setLookAt(player, 30.0F, 30.0F);
+                        } else {
+                            // Player moved away or disconnected
+                            endConversation();
+                        }
+                    }
+                }
+            }
+        }
+
         // Show thinking particles after delay
         if (isThinking() && level().isClientSide()) {
             if (random.nextFloat() < 0.1) {
                 // Particles handled in client renderer
             }
         }
+    }
+
+    /**
+     * End the current conversation, allowing the NPC to move again
+     */
+    public void endConversation() {
+        setInConversation(false);
+        setThinking(false);
+        currentlyTalkingTo = null;
+        processingRequest.set(false);
     }
     
     @Override
@@ -362,7 +410,15 @@ public class StorytellerNPC extends PathfinderMob {
     public void setSlimModel(boolean slim) {
         this.entityData.set(DATA_SLIM_MODEL, slim);
     }
-    
+
+    public boolean isInConversation() {
+        return this.entityData.get(DATA_IN_CONVERSATION);
+    }
+
+    public void setInConversation(boolean inConversation) {
+        this.entityData.set(DATA_IN_CONVERSATION, inConversation);
+    }
+
     // ==================== Eira Integration ====================
     
     /**

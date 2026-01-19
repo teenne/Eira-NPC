@@ -105,11 +105,12 @@ public class OllamaProvider implements LLMProvider {
 
                 requestBody.add("messages", messagesArray);
 
-                // Optional: Add generation parameters for better roleplay
+                // Generation parameters for roleplay - keep responses short and snappy
                 JsonObject options = new JsonObject();
-                options.addProperty("temperature", 0.8);
+                options.addProperty("temperature", 0.7);
                 options.addProperty("top_p", 0.9);
                 options.addProperty("repeat_penalty", 1.1);
+                options.addProperty("num_predict", 150); // Limit response to ~150 tokens for faster responses
                 requestBody.add("options", options);
 
                 int timeout = ModConfig.COMMON.ollamaTimeout.get();

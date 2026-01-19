@@ -127,10 +127,18 @@ public class NPCChatScreen extends Screen {
     }
     
     @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        // Use transparent background (no blur) instead of default
+        this.renderTransparentBackground(graphics);
+        // Then draw our semi-transparent overlay
+        graphics.fill(0, 0, this.width, this.height, 0xC0101010);
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
-        // Darken background
+        // Render our custom background (calls override above)
         this.renderBackground(graphics, mouseX, mouseY, partialTick);
-        
+
         int chatWidth = Math.min(400, this.width - 40);
         int centerX = this.width / 2;
         int chatLeft = centerX - chatWidth / 2;
