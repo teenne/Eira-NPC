@@ -201,9 +201,22 @@ public class StorytellerNPC extends PathfinderMob {
 
         // Handle greeting request - NPC initiates conversation
         boolean isGreeting = message.equals("[GREETING]");
-        String actualMessage = isGreeting
-            ? "A visitor approaches. Greet them with ONE short sentence only (under 10 words)."
-            : message;
+        String actualMessage;
+        if (isGreeting) {
+            // Check if we have existing conversation history with this player
+            boolean hasHistory = !history.isEmpty() ||
+                ConversationHistory.getConversationCount(this.getUUID(), player.getUUID()) > 0;
+
+            if (hasHistory) {
+                // Returning visitor - acknowledge them differently
+                actualMessage = "This visitor has returned. Acknowledge them briefly with ONE short sentence (under 10 words). Don't repeat your previous greeting.";
+            } else {
+                // First time meeting
+                actualMessage = "A new visitor approaches. Greet them with ONE short sentence only (under 10 words).";
+            }
+        } else {
+            actualMessage = message;
+        }
 
         // Add the new message to the list sent to LLM
         // (we won't persist greeting prompts to conversation history, but LLM needs something to respond to)
