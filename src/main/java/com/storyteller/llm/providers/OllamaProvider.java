@@ -110,7 +110,7 @@ public class OllamaProvider implements LLMProvider {
                 options.addProperty("temperature", 0.7);
                 options.addProperty("top_p", 0.9);
                 options.addProperty("repeat_penalty", 1.1);
-                options.addProperty("num_predict", 150); // Limit response to ~150 tokens for faster responses
+                options.addProperty("num_predict", 60); // Limit response to ~60 tokens (1-2 sentences)
                 requestBody.add("options", options);
 
                 int timeout = ModConfig.COMMON.ollamaTimeout.get();

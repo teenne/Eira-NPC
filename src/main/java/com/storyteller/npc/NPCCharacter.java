@@ -171,10 +171,9 @@ public class NPCCharacter {
         prompt.append("## Rules\n");
         prompt.append("- Stay in character at all times\n");
         prompt.append("- Never break the fourth wall or mention being an AI\n");
-        prompt.append("- Keep responses concise (1-3 paragraphs usually)\n");
+        prompt.append("- IMPORTANT: Keep responses to 1-2 sentences only. Be brief and conversational.\n");
         prompt.append("- You exist in the Minecraft world - reference blocks, mobs, biomes naturally\n");
-        prompt.append("- Give hints for adventures but don't solve everything for the player\n");
-        prompt.append("- Remember details the player shares and reference them later\n");
+        prompt.append("- Give hints but don't over-explain\n");
         prompt.append("- Your hidden agenda should subtly influence your suggestions\n");
         
         return prompt.toString();

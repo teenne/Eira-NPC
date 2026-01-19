@@ -110,6 +110,15 @@ public class StorytellerNPC extends PathfinderMob {
         this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
         this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 0.6D, 0.001F)); // Very rare wandering
     }
+
+    @Override
+    protected void customServerAiStep(ServerLevel level) {
+        // Skip AI goal processing when in conversation - prevents wandering
+        if (isInConversation()) {
+            return;
+        }
+        super.customServerAiStep(level);
+    }
     
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
