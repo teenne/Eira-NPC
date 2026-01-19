@@ -272,7 +272,7 @@ public class StorytellerNPC extends PathfinderMob {
                     response.length() > 100 ? response.substring(0, 100) + "..." : response);
 
                 // Try to detect quests from the response
-                QuestManager.parseQuestsFromResponse(this.getUUID(), player.getUUID(), response);
+                QuestManager.parseQuestsFromResponse(this.getUUID(), player, response);
 
                 // Back on server, send response to player
                 if (player.isAlive() && player.connection != null) {
