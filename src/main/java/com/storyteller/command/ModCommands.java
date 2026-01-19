@@ -1,11 +1,13 @@
 package com.storyteller.command;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.storyteller.StorytellerMod;
 import com.storyteller.entity.ModEntities;
+import com.storyteller.entity.NPCBehaviorMode;
 import com.storyteller.entity.StorytellerNPC;
 import com.storyteller.npc.NPCCharacter;
 import com.storyteller.npc.NPCManager;
@@ -13,13 +15,21 @@ import com.storyteller.npc.QuestManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
 
 @EventBusSubscriber(modid = StorytellerMod.MOD_ID)
 public class ModCommands {
@@ -40,7 +50,29 @@ public class ModCommands {
             builder
         );
     };
-    
+
+    private static final SuggestionProvider<CommandSourceStack> NPC_SUGGESTIONS = (context, builder) -> {
+        ServerLevel level = context.getSource().getLevel();
+        List<String> npcNames = level.getEntitiesOfClass(
+            StorytellerNPC.class,
+            context.getSource().getEntity() != null
+                ? context.getSource().getEntity().getBoundingBox().inflate(50)
+                : new AABB(context.getSource().getPosition(), context.getSource().getPosition()).inflate(50)
+        ).stream().map(StorytellerNPC::getNPCDisplayName).distinct().toList();
+
+        List<String> suggestions = new java.util.ArrayList<>();
+        suggestions.add("nearest");
+        suggestions.addAll(npcNames);
+        return SharedSuggestionProvider.suggest(suggestions, builder);
+    };
+
+    private static final SuggestionProvider<CommandSourceStack> BEHAVIOR_MODE_SUGGESTIONS = (context, builder) -> {
+        return SharedSuggestionProvider.suggest(
+            Arrays.stream(NPCBehaviorMode.values()).map(NPCBehaviorMode::getId),
+            builder
+        );
+    };
+
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CommandDispatcher<CommandSourceStack> dispatcher = event.getDispatcher();
@@ -90,6 +122,48 @@ public class ModCommands {
                 .executes(ModCommands::listQuests)
                 .then(Commands.literal("clear")
                     .executes(ModCommands::clearQuests)
+                )
+            )
+
+            // Behavior commands
+            .then(Commands.literal("behavior")
+                .then(Commands.argument("npc", StringArgumentType.string())
+                    .suggests(NPC_SUGGESTIONS)
+                    // Info subcommand
+                    .then(Commands.literal("info")
+                        .executes(ModCommands::behaviorInfo)
+                    )
+                    // Stationary mode
+                    .then(Commands.literal("stationary")
+                        .executes(ModCommands::setBehaviorStationary)
+                    )
+                    // Anchored mode
+                    .then(Commands.literal("anchored")
+                        .executes(ModCommands::setBehaviorAnchoredDefault)
+                        .then(Commands.argument("radius", IntegerArgumentType.integer(1, 100))
+                            .executes(ModCommands::setBehaviorAnchoredRadius)
+                        )
+                        .then(Commands.literal("here")
+                            .executes(ModCommands::setBehaviorAnchoredHereDefault)
+                            .then(Commands.argument("radius", IntegerArgumentType.integer(1, 100))
+                                .executes(ModCommands::setBehaviorAnchoredHere)
+                            )
+                        )
+                    )
+                    // Follow mode
+                    .then(Commands.literal("follow")
+                        .executes(ModCommands::setBehaviorFollowSelf)
+                        .then(Commands.argument("player", EntityArgument.player())
+                            .executes(ModCommands::setBehaviorFollowPlayer)
+                        )
+                        .then(Commands.argument("distance", IntegerArgumentType.integer(1, 50))
+                            .executes(ModCommands::setBehaviorFollowDistance)
+                        )
+                    )
+                    // Hiding mode
+                    .then(Commands.literal("hiding")
+                        .executes(ModCommands::setBehaviorHiding)
+                    )
                 )
             )
         );
@@ -143,14 +217,20 @@ public class ModCommands {
         if (npc != null) {
             npc.setPos(pos.x(), pos.y(), pos.z());
             npc.setCharacter(character);
+
+            // Set the spawner player UUID if run by a player
+            if (source.getEntity() instanceof ServerPlayer player) {
+                npc.setSpawnerPlayerUUID(player.getUUID());
+            }
+
             level.addFreshEntity(npc);
-            
+
             source.sendSuccess(() -> Component.literal(
                 "Spawned " + character.getName() + " (" + character.getTitle() + ")"
             ), true);
             return 1;
         }
-        
+
         source.sendFailure(Component.literal("Failed to spawn NPC"));
         return 0;
     }
@@ -329,7 +409,286 @@ public class ModCommands {
         source.sendSuccess(() -> Component.literal("§e/storyteller status §7- Show LLM connection status"), false);
         source.sendSuccess(() -> Component.literal("§e/storyteller quests §7- List your active quests"), false);
         source.sendSuccess(() -> Component.literal("§e/storyteller quests clear §7- Clear all quests"), false);
+        source.sendSuccess(() -> Component.literal("§6=== Behavior Commands ==="), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> info §7- Show NPC behavior"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> stationary §7- Stay in place"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> anchored [radius] §7- Wander near anchor"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> anchored here [radius] §7- Set anchor to current pos"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> follow [player] §7- Follow a player"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> hiding §7- Hide from players"), false);
+        source.sendSuccess(() -> Component.literal("§7Use 'nearest' for <npc> to select closest NPC"), false);
         source.sendSuccess(() -> Component.literal("§7Right-click an NPC to start chatting!"), false);
+
+        return 1;
+    }
+
+    // ==================== Behavior Commands ====================
+
+    /**
+     * Find an NPC by selector: "nearest" or by display name
+     */
+    private static StorytellerNPC findNPC(CommandSourceStack source, String selector) {
+        ServerLevel level = source.getLevel();
+        Vec3 pos = source.getPosition();
+
+        List<StorytellerNPC> npcs = level.getEntitiesOfClass(
+            StorytellerNPC.class,
+            new AABB(pos, pos).inflate(100)
+        );
+
+        if (npcs.isEmpty()) {
+            return null;
+        }
+
+        if (selector.equalsIgnoreCase("nearest")) {
+            // Find the closest NPC
+            StorytellerNPC nearest = null;
+            double nearestDist = Double.MAX_VALUE;
+            for (StorytellerNPC npc : npcs) {
+                double dist = npc.distanceToSqr(pos);
+                if (dist < nearestDist) {
+                    nearestDist = dist;
+                    nearest = npc;
+                }
+            }
+            return nearest;
+        }
+
+        // Try to match by display name
+        for (StorytellerNPC npc : npcs) {
+            if (npc.getNPCDisplayName().equalsIgnoreCase(selector)) {
+                return npc;
+            }
+        }
+
+        // Try to match by UUID
+        try {
+            UUID uuid = UUID.fromString(selector);
+            for (StorytellerNPC npc : npcs) {
+                if (npc.getUUID().equals(uuid)) {
+                    return npc;
+                }
+            }
+        } catch (IllegalArgumentException ignored) {
+            // Not a valid UUID, that's fine
+        }
+
+        return null;
+    }
+
+    private static int behaviorInfo(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        NPCBehaviorMode mode = npc.getBehaviorMode();
+        source.sendSuccess(() -> Component.literal("§6=== " + npc.getNPCDisplayName() + " Behavior ==="), false);
+        source.sendSuccess(() -> Component.literal("§eMode: §a" + mode.getId() + " §7(" + mode.getDescription() + ")"), false);
+
+        switch (mode) {
+            case ANCHORED -> {
+                BlockPos anchor = npc.getAnchorPosition();
+                int radius = npc.getAnchorRadius();
+                source.sendSuccess(() -> Component.literal("§eAnchor: §a" +
+                    (anchor != null ? anchor.getX() + ", " + anchor.getY() + ", " + anchor.getZ() : "Not set")), false);
+                source.sendSuccess(() -> Component.literal("§eRadius: §a" + radius + " blocks"), false);
+            }
+            case FOLLOW_PLAYER -> {
+                UUID target = npc.getTargetPlayerUUID();
+                UUID spawner = npc.getSpawnerPlayerUUID();
+                int distance = npc.getFollowDistance();
+
+                String targetName = "None";
+                if (target != null) {
+                    ServerPlayer player = source.getServer().getPlayerList().getPlayer(target);
+                    targetName = player != null ? player.getName().getString() : target.toString();
+                } else if (spawner != null) {
+                    ServerPlayer player = source.getServer().getPlayerList().getPlayer(spawner);
+                    targetName = player != null ? player.getName().getString() + " (spawner)" : spawner.toString();
+                }
+                String finalTargetName = targetName;
+                source.sendSuccess(() -> Component.literal("§eFollowing: §a" + finalTargetName), false);
+                source.sendSuccess(() -> Component.literal("§eDistance: §a" + distance + " blocks"), false);
+            }
+            case HIDING -> {
+                source.sendSuccess(() -> Component.literal("§eHides from players within line of sight"), false);
+            }
+            case STATIONARY -> {
+                source.sendSuccess(() -> Component.literal("§eStays mostly in place with rare wandering"), false);
+            }
+        }
+
+        return 1;
+    }
+
+    private static int setBehaviorStationary(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        npc.setBehaviorMode(NPCBehaviorMode.STATIONARY);
+        source.sendSuccess(() -> Component.literal(
+            "§a" + npc.getNPCDisplayName() + " is now stationary"
+        ), true);
+
+        return 1;
+    }
+
+    private static int setBehaviorAnchoredDefault(CommandContext<CommandSourceStack> context) {
+        return setBehaviorAnchored(context, null, false);
+    }
+
+    private static int setBehaviorAnchoredRadius(CommandContext<CommandSourceStack> context) {
+        int radius = IntegerArgumentType.getInteger(context, "radius");
+        return setBehaviorAnchored(context, radius, false);
+    }
+
+    private static int setBehaviorAnchoredHereDefault(CommandContext<CommandSourceStack> context) {
+        return setBehaviorAnchored(context, null, true);
+    }
+
+    private static int setBehaviorAnchoredHere(CommandContext<CommandSourceStack> context) {
+        int radius = IntegerArgumentType.getInteger(context, "radius");
+        return setBehaviorAnchored(context, radius, true);
+    }
+
+    private static int setBehaviorAnchored(CommandContext<CommandSourceStack> context, Integer radius, boolean setAnchorHere) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        if (setAnchorHere) {
+            npc.setAnchorPosition(BlockPos.containing(source.getPosition()));
+        } else if (npc.getAnchorPosition() == null) {
+            // Default to NPC's current position
+            npc.setAnchorPosition(npc.blockPosition());
+        }
+
+        if (radius != null) {
+            npc.setAnchorRadius(radius);
+        }
+
+        npc.setBehaviorMode(NPCBehaviorMode.ANCHORED);
+
+        BlockPos anchor = npc.getAnchorPosition();
+        int finalRadius = npc.getAnchorRadius();
+        source.sendSuccess(() -> Component.literal(
+            "§a" + npc.getNPCDisplayName() + " is now anchored at " +
+                anchor.getX() + ", " + anchor.getY() + ", " + anchor.getZ() +
+                " (radius: " + finalRadius + " blocks)"
+        ), true);
+
+        return 1;
+    }
+
+    private static int setBehaviorFollowSelf(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        if (!(source.getEntity() instanceof ServerPlayer player)) {
+            source.sendFailure(Component.literal("This command must be run as a player"));
+            return 0;
+        }
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        npc.setTargetPlayerUUID(player.getUUID());
+        npc.setBehaviorMode(NPCBehaviorMode.FOLLOW_PLAYER);
+
+        source.sendSuccess(() -> Component.literal(
+            "§a" + npc.getNPCDisplayName() + " is now following you"
+        ), true);
+
+        return 1;
+    }
+
+    private static int setBehaviorFollowPlayer(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        try {
+            ServerPlayer target = EntityArgument.getPlayer(context, "player");
+            npc.setTargetPlayerUUID(target.getUUID());
+            npc.setBehaviorMode(NPCBehaviorMode.FOLLOW_PLAYER);
+
+            source.sendSuccess(() -> Component.literal(
+                "§a" + npc.getNPCDisplayName() + " is now following " + target.getName().getString()
+            ), true);
+
+            return 1;
+        } catch (Exception e) {
+            source.sendFailure(Component.literal("Player not found"));
+            return 0;
+        }
+    }
+
+    private static int setBehaviorFollowDistance(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        int distance = IntegerArgumentType.getInteger(context, "distance");
+        npc.setFollowDistance(distance);
+
+        // If not already in follow mode, set to follow the command issuer
+        if (npc.getBehaviorMode() != NPCBehaviorMode.FOLLOW_PLAYER) {
+            if (source.getEntity() instanceof ServerPlayer player) {
+                npc.setTargetPlayerUUID(player.getUUID());
+            }
+            npc.setBehaviorMode(NPCBehaviorMode.FOLLOW_PLAYER);
+        }
+
+        source.sendSuccess(() -> Component.literal(
+            "§a" + npc.getNPCDisplayName() + " follow distance set to " + distance + " blocks"
+        ), true);
+
+        return 1;
+    }
+
+    private static int setBehaviorHiding(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String selector = StringArgumentType.getString(context, "npc");
+
+        StorytellerNPC npc = findNPC(source, selector);
+        if (npc == null) {
+            source.sendFailure(Component.literal("NPC not found: " + selector));
+            return 0;
+        }
+
+        npc.setBehaviorMode(NPCBehaviorMode.HIDING);
+        source.sendSuccess(() -> Component.literal(
+            "§a" + npc.getNPCDisplayName() + " is now hiding from players"
+        ), true);
 
         return 1;
     }

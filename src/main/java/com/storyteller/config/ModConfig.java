@@ -58,6 +58,12 @@ public class ModConfig {
         public final ModConfigSpec.IntValue eventExpiryMinutes;
         public final ModConfigSpec.BooleanValue enableItemAwareness;
 
+        // Behavior modes
+        public final ModConfigSpec.IntValue anchorRadiusDefault;
+        public final ModConfigSpec.IntValue followDistanceDefault;
+        public final ModConfigSpec.IntValue hidingCheckInterval;
+        public final ModConfigSpec.IntValue hidingFleeDistance;
+
         // Rate limiting
         public final ModConfigSpec.IntValue minTimeBetweenMessages;
         public final ModConfigSpec.IntValue maxMessagesPerMinute;
@@ -164,6 +170,26 @@ public class ModConfig {
             enableItemAwareness = builder
                 .comment("NPCs can see and comment on items the player is holding")
                 .define("enableItemAwareness", true);
+
+            builder.pop();
+
+            builder.comment("NPC Behavior Modes").push("behavior_modes");
+
+            anchorRadiusDefault = builder
+                .comment("Default anchor radius for ANCHORED behavior mode (blocks)")
+                .defineInRange("anchorRadiusDefault", 10, 5, 50);
+
+            followDistanceDefault = builder
+                .comment("Default follow distance for FOLLOW_PLAYER behavior mode (blocks)")
+                .defineInRange("followDistanceDefault", 5, 3, 10);
+
+            hidingCheckInterval = builder
+                .comment("How often HIDING NPCs check line of sight (ticks, 20 = 1 second)")
+                .defineInRange("hidingCheckInterval", 10, 1, 40);
+
+            hidingFleeDistance = builder
+                .comment("How far HIDING NPCs try to flee when spotted (blocks)")
+                .defineInRange("hidingFleeDistance", 15, 5, 50);
 
             builder.pop();
 

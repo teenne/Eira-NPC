@@ -98,7 +98,8 @@ See `examples/` for complete character examples including Eira integration.
 | Package | Purpose |
 |---------|---------|
 | `com.storyteller` | Mod entry point (`StorytellerMod`) |
-| `com.storyteller.entity` | `StorytellerNPC` entity, `ModEntities` registration |
+| `com.storyteller.entity` | `StorytellerNPC` entity, `ModEntities` registration, `NPCBehaviorMode` enum |
+| `com.storyteller.entity.goals` | AI goals for behavior modes (`FollowTargetPlayerGoal`, `HideFromPlayerGoal`, etc.) |
 | `com.storyteller.npc` | `NPCCharacter`, `NPCManager`, `ConversationHistory`, `WorldContext` |
 | `com.storyteller.llm` | `LLMManager`, `LLMProvider` interface |
 | `com.storyteller.llm.providers` | `OllamaProvider`, `ClaudeProvider`, `OpenAIProvider` |
@@ -114,6 +115,14 @@ See `examples/` for complete character examples including Eira integration.
 - `/storyteller create <name>` - Create new character template
 - `/storyteller reload` - Reload configurations
 - `/storyteller status` - Show LLM connection status
+- `/storyteller quests` - List active quests
+- `/storyteller quests clear` - Clear all quests
+- `/storyteller behavior <npc> info` - Show NPC behavior
+- `/storyteller behavior <npc> stationary` - Set stationary mode
+- `/storyteller behavior <npc> anchored [radius]` - Set anchored mode
+- `/storyteller behavior <npc> anchored here [radius]` - Anchor at current position
+- `/storyteller behavior <npc> follow [player]` - Set follow mode
+- `/storyteller behavior <npc> hiding` - Set hiding mode
 
 ## Development Notes
 

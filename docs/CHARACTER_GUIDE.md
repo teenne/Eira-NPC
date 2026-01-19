@@ -13,10 +13,11 @@ This guide explains how to create compelling AI-powered NPC characters for the S
 4. [Hidden Agendas](#4-hidden-agendas)
 5. [Speech Patterns](#5-speech-patterns)
 6. [World Integration](#6-world-integration)
-7. [Custom Skins](#7-custom-skins)
-8. [Best Practices](#8-best-practices)
-9. [Examples](#9-examples)
-10. [Troubleshooting](#10-troubleshooting)
+7. [Behavior Modes](#7-behavior-modes)
+8. [Custom Skins](#8-custom-skins)
+9. [Best Practices](#9-best-practices)
+10. [Examples](#10-examples)
+11. [Troubleshooting](#11-troubleshooting)
 
 ---
 
@@ -432,7 +433,102 @@ This automatically creates a tracked quest. When the player returns with the ite
 
 ---
 
-## 7. Custom Skins
+## 7. Behavior Modes
+
+NPCs can be configured with different behavior modes that control how they move and interact with the world.
+
+### Available Modes
+
+| Mode | Description |
+|------|-------------|
+| **STATIONARY** | Default mode. NPC stays mostly in place with occasional wandering. |
+| **ANCHORED** | NPC wanders within a configurable radius of an anchor position. |
+| **FOLLOW_PLAYER** | NPC follows a specific player at a configurable distance. |
+| **HIDING** | NPC actively hides from players using line-of-sight checks. |
+
+### Setting Behavior via Commands
+
+Use the `/storyteller behavior` command to change NPC behavior:
+
+```
+# Show current behavior
+/storyteller behavior nearest info
+
+# Set to stationary (stays in place)
+/storyteller behavior nearest stationary
+
+# Set to anchored (wanders within radius)
+/storyteller behavior nearest anchored 15
+
+# Anchor at your current location
+/storyteller behavior nearest anchored here 20
+
+# Follow you
+/storyteller behavior nearest follow
+
+# Follow another player
+/storyteller behavior nearest follow PlayerName
+
+# Set follow distance
+/storyteller behavior nearest follow 8
+
+# Enable hiding behavior
+/storyteller behavior nearest hiding
+```
+
+**NPC Selector:** Use `nearest` for the closest NPC, or specify the NPC's display name or UUID.
+
+### Behavior Use Cases
+
+**STATIONARY** - Best for:
+- Shopkeepers and vendors
+- Oracle/fortune teller NPCs
+- Throne room royalty
+
+**ANCHORED** - Best for:
+- Village NPCs that should stay in their area
+- Guards patrolling a small zone
+- NPCs tied to a specific building
+
+**FOLLOW_PLAYER** - Best for:
+- Companion NPCs
+- Quest givers who guide players
+- Escort mission targets
+
+**HIDING** - Best for:
+- Shy or mysterious NPCs players need to find
+- Hide-and-seek style encounters
+- NPCs that are being hunted
+
+### Configuration Defaults
+
+Behavior defaults can be configured in `storyteller-common.toml`:
+
+```toml
+[behavior_modes]
+# Default anchor radius for ANCHORED mode (blocks)
+anchorRadiusDefault = 10
+
+# Default follow distance for FOLLOW_PLAYER mode (blocks)
+followDistanceDefault = 5
+
+# How often HIDING NPCs check line of sight (ticks, 20 = 1 second)
+hidingCheckInterval = 10
+
+# How far HIDING NPCs flee when spotted (blocks)
+hidingFleeDistance = 15
+```
+
+### Behavior Persistence
+
+All behavior settings are automatically saved with the NPC and persist through:
+- Server restarts
+- Chunk unloading/loading
+- World saves
+
+---
+
+## 8. Custom Skins
 
 ### Skin File Location
 
@@ -469,7 +565,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 8. Best Practices
+## 9. Best Practices
 
 ### DO ✓
 
@@ -501,7 +597,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 9. Examples
+## 10. Examples
 
 ### Example 1: The Mysterious Merchant
 
@@ -686,7 +782,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### Character not appearing in spawn list
 

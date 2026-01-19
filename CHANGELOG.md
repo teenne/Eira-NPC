@@ -44,6 +44,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `eventExpiryMinutes` - Configure event expiry time
   - `enableItemAwareness` - Toggle NPC item awareness
 
+- **NPC Behavior Modes** (PR #8)
+  - **STATIONARY** - Default mode, NPC stays in place with rare wandering
+  - **ANCHORED** - NPC wanders within a configurable radius of an anchor position
+  - **FOLLOW_PLAYER** - NPC follows a specific player at a configurable distance
+  - **HIDING** - NPC hides from players using line-of-sight checks
+  - New commands:
+    - `/storyteller behavior <npc> info` - Show NPC's current behavior
+    - `/storyteller behavior <npc> stationary` - Set to stationary mode
+    - `/storyteller behavior <npc> anchored [radius]` - Set to anchored mode
+    - `/storyteller behavior <npc> anchored here [radius]` - Anchor at current position
+    - `/storyteller behavior <npc> follow [player]` - Set to follow mode
+    - `/storyteller behavior <npc> hiding` - Set to hiding mode
+  - NPC selector supports "nearest", display name, or UUID
+  - Behavior settings persist through server restarts
+  - Configurable defaults in `behavior_modes` config section
+
 - **Player Event Tracking**
   - NPCs react to recent player achievements (advancements, boss kills)
   - Notable mob kills tracked (Dragon, Wither, Warden, Evoker, etc.)

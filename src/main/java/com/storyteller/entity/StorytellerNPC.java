@@ -2,6 +2,10 @@ package com.storyteller.entity;
 
 import com.storyteller.StorytellerMod;
 import com.storyteller.config.ModConfig;
+import com.storyteller.entity.goals.FollowTargetPlayerGoal;
+import com.storyteller.entity.goals.HideFromPlayerGoal;
+import com.storyteller.entity.goals.ReturnToAnchorGoal;
+import com.storyteller.entity.goals.WanderNearAnchorGoal;
 import com.storyteller.integration.EiraIntegrationManager;
 import com.storyteller.integration.EiraIntegrationManager.ExternalEvent;
 import com.storyteller.integration.EiraIntegrationManager.NPCEvent;
@@ -68,6 +72,17 @@ public class StorytellerNPC extends PathfinderMob {
         StorytellerNPC.class, EntityDataSerializers.BOOLEAN
     );
 
+    // Behavior mode synced data
+    private static final EntityDataAccessor<String> DATA_BEHAVIOR_MODE = SynchedEntityData.defineId(
+        StorytellerNPC.class, EntityDataSerializers.STRING
+    );
+    private static final EntityDataAccessor<Integer> DATA_ANCHOR_RADIUS = SynchedEntityData.defineId(
+        StorytellerNPC.class, EntityDataSerializers.INT
+    );
+    private static final EntityDataAccessor<Integer> DATA_FOLLOW_DISTANCE = SynchedEntityData.defineId(
+        StorytellerNPC.class, EntityDataSerializers.INT
+    );
+
     // Server-side only
     private NPCCharacter character;
     private final AtomicBoolean processingRequest = new AtomicBoolean(false);
@@ -80,6 +95,11 @@ public class StorytellerNPC extends PathfinderMob {
     private boolean emittingRedstone = false;
     private int redstoneStrength = 0;
     private String pendingExternalContext = null;
+
+    // Behavior mode state (server-side)
+    private BlockPos anchorPosition = null;
+    private UUID targetPlayerUUID = null;
+    private UUID spawnerPlayerUUID = null;
     
     public StorytellerNPC(EntityType<? extends PathfinderMob> entityType, Level level) {
         super(entityType, level);
@@ -102,15 +122,56 @@ public class StorytellerNPC extends PathfinderMob {
         builder.define(DATA_SKIN_FILE, "");
         builder.define(DATA_SLIM_MODEL, false);
         builder.define(DATA_IN_CONVERSATION, false);
+        builder.define(DATA_BEHAVIOR_MODE, NPCBehaviorMode.STATIONARY.getId());
+        builder.define(DATA_ANCHOR_RADIUS, 10);
+        builder.define(DATA_FOLLOW_DISTANCE, 5);
     }
     
     @Override
     protected void registerGoals() {
-        // Basic AI goals - NPCs should be mostly stationary but can wander a bit
+        rebuildGoals();
+    }
+
+    /**
+     * Rebuild AI goals based on current behavior mode.
+     * Call this when behavior mode changes.
+     */
+    public void rebuildGoals() {
+        // Clear existing goals
+        this.goalSelector.removeAllGoals(goal -> true);
+
+        // Always add float goal (survival in water)
         this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
-        this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
-        this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 0.6D, 0.001F)); // Very rare wandering
+
+        // Add mode-specific goals
+        NPCBehaviorMode mode = getBehaviorMode();
+        switch (mode) {
+            case STATIONARY -> {
+                this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
+                this.goalSelector.addGoal(2, new RandomLookAroundGoal(this));
+                this.goalSelector.addGoal(3, new WaterAvoidingRandomStrollGoal(this, 0.6D, 0.001F));
+            }
+            case ANCHORED -> {
+                // Set anchor to current position if not set
+                if (anchorPosition == null) {
+                    anchorPosition = this.blockPosition();
+                }
+                this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
+                this.goalSelector.addGoal(2, new ReturnToAnchorGoal(this));
+                this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+                this.goalSelector.addGoal(4, new WanderNearAnchorGoal(this));
+            }
+            case FOLLOW_PLAYER -> {
+                this.goalSelector.addGoal(1, new LookAtPlayerGoal(this, Player.class, 8.0F));
+                this.goalSelector.addGoal(2, new FollowTargetPlayerGoal(this));
+                this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+            }
+            case HIDING -> {
+                this.goalSelector.addGoal(2, new HideFromPlayerGoal(this));
+                this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+                this.goalSelector.addGoal(4, new WaterAvoidingRandomStrollGoal(this, 0.4D, 0.01F));
+            }
+        }
     }
 
     @Override
@@ -380,7 +441,23 @@ public class StorytellerNPC extends PathfinderMob {
         tag.putString("DisplayName", getNPCDisplayName());
         tag.putString("SkinFile", getSkinFile());
         tag.putBoolean("SlimModel", isSlimModel());
-        
+
+        // Save behavior mode data
+        tag.putString("BehaviorMode", getBehaviorMode().getId());
+        tag.putInt("AnchorRadius", getAnchorRadius());
+        tag.putInt("FollowDistance", getFollowDistance());
+        if (anchorPosition != null) {
+            tag.putInt("AnchorX", anchorPosition.getX());
+            tag.putInt("AnchorY", anchorPosition.getY());
+            tag.putInt("AnchorZ", anchorPosition.getZ());
+        }
+        if (targetPlayerUUID != null) {
+            tag.putUUID("TargetPlayer", targetPlayerUUID);
+        }
+        if (spawnerPlayerUUID != null) {
+            tag.putUUID("SpawnerPlayer", spawnerPlayerUUID);
+        }
+
         if (character != null) {
             tag.put("Character", character.toNBT());
         }
@@ -389,7 +466,7 @@ public class StorytellerNPC extends PathfinderMob {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        
+
         if (tag.contains("CharacterId")) {
             setCharacterId(tag.getString("CharacterId"));
         }
@@ -405,6 +482,33 @@ public class StorytellerNPC extends PathfinderMob {
         if (tag.contains("Character")) {
             this.character = NPCCharacter.fromNBT(tag.getCompound("Character"));
         }
+
+        // Load behavior mode data
+        if (tag.contains("BehaviorMode")) {
+            setBehaviorMode(NPCBehaviorMode.fromId(tag.getString("BehaviorMode")));
+        }
+        if (tag.contains("AnchorRadius")) {
+            setAnchorRadius(tag.getInt("AnchorRadius"));
+        }
+        if (tag.contains("FollowDistance")) {
+            setFollowDistance(tag.getInt("FollowDistance"));
+        }
+        if (tag.contains("AnchorX")) {
+            this.anchorPosition = new BlockPos(
+                tag.getInt("AnchorX"),
+                tag.getInt("AnchorY"),
+                tag.getInt("AnchorZ")
+            );
+        }
+        if (tag.contains("TargetPlayer")) {
+            this.targetPlayerUUID = tag.getUUID("TargetPlayer");
+        }
+        if (tag.contains("SpawnerPlayer")) {
+            this.spawnerPlayerUUID = tag.getUUID("SpawnerPlayer");
+        }
+
+        // Rebuild goals based on loaded behavior mode
+        rebuildGoals();
     }
     
     // Character management
@@ -488,6 +592,57 @@ public class StorytellerNPC extends PathfinderMob {
 
     public void setInConversation(boolean inConversation) {
         this.entityData.set(DATA_IN_CONVERSATION, inConversation);
+    }
+
+    // ==================== Behavior Mode ====================
+
+    public NPCBehaviorMode getBehaviorMode() {
+        return NPCBehaviorMode.fromId(this.entityData.get(DATA_BEHAVIOR_MODE));
+    }
+
+    public void setBehaviorMode(NPCBehaviorMode mode) {
+        this.entityData.set(DATA_BEHAVIOR_MODE, mode.getId());
+        rebuildGoals();
+    }
+
+    public int getAnchorRadius() {
+        return this.entityData.get(DATA_ANCHOR_RADIUS);
+    }
+
+    public void setAnchorRadius(int radius) {
+        this.entityData.set(DATA_ANCHOR_RADIUS, Math.max(1, Math.min(100, radius)));
+    }
+
+    public int getFollowDistance() {
+        return this.entityData.get(DATA_FOLLOW_DISTANCE);
+    }
+
+    public void setFollowDistance(int distance) {
+        this.entityData.set(DATA_FOLLOW_DISTANCE, Math.max(1, Math.min(50, distance)));
+    }
+
+    public BlockPos getAnchorPosition() {
+        return anchorPosition;
+    }
+
+    public void setAnchorPosition(BlockPos pos) {
+        this.anchorPosition = pos;
+    }
+
+    public UUID getTargetPlayerUUID() {
+        return targetPlayerUUID;
+    }
+
+    public void setTargetPlayerUUID(UUID uuid) {
+        this.targetPlayerUUID = uuid;
+    }
+
+    public UUID getSpawnerPlayerUUID() {
+        return spawnerPlayerUUID;
+    }
+
+    public void setSpawnerPlayerUUID(UUID uuid) {
+        this.spawnerPlayerUUID = uuid;
     }
 
     // ==================== Eira Integration ====================

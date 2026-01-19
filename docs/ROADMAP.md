@@ -1,4 +1,4 @@
-# Project Roadmap & TODO
+# Project Roadmap
 # Storyteller NPCs Mod
 
 This document tracks the development progress and planned features.
@@ -9,105 +9,111 @@ This document tracks the development progress and planned features.
 
 | Phase | Status | Progress |
 |-------|--------|----------|
-| Phase 1: MVP | 🔄 In Progress | 60% |
-| Phase 2: Polish | ⏳ Planned | 0% |
-| Phase 3: Multi-Loader | ⏳ Planned | 0% |
-| Phase 4: Extended | ⏳ Future | 0% |
+| Phase 1: MVP | **Complete** | 100% |
+| Phase 2: Polish | 🔄 In Progress | 20% |
+| Phase 3: Extended Features | ⏳ Planned | 0% |
+| Phase 4: Multi-Loader | ⏳ Future | 0% |
 
 ---
 
-## Phase 1: MVP (Core Functionality)
+## Phase 1: MVP (Complete)
 
-### ✅ Completed
+### Core Features (All Done)
 
 - [x] Project setup and build system
-- [x] Documentation structure (PRD, Architecture, etc.)
-- [x] LLM Provider interface design
-- [x] Ollama provider implementation
-- [x] Claude provider implementation
-- [x] OpenAI provider implementation
-- [x] LLM Manager with fallback
-- [x] NPCCharacter data model
-- [x] System prompt generation
-- [x] WorldContext builder
-- [x] ConversationHistory manager
-- [x] StorytellerNPC entity class
-- [x] Entity registration
-- [x] Network packet definitions
+- [x] Documentation structure
+- [x] LLM Provider interface and implementations (Ollama, Claude, OpenAI)
+- [x] NPCCharacter data model and JSON system
+- [x] System prompt generation with world context
+- [x] ConversationHistory manager with persistence
+- [x] StorytellerNPC entity with custom rendering
+- [x] Network packets for client-server communication
 - [x] NPCChatScreen GUI
-- [x] Client-side rendering (basic)
-- [x] Server commands
+- [x] Server commands (/storyteller)
+- [x] NeoForge 1.21.4 compatibility
+- [x] Testing infrastructure (89 tests)
 
-### 🔄 In Progress
+### PR Deliverables (All Merged)
 
-- [x] NeoForge 1.21.4 compatibility verification (API fixes complete)
-- [x] Testing infrastructure (89 tests, 67 passing)
-- [ ] Custom skin loading (full implementation)
-- [ ] In-game testing with Ollama
-
-### ⏳ Todo
-
-- [ ] Entity AI improvements (look at player, idle animations)
-- [ ] Sound effects for chat
-- [ ] "Thinking" particle effects
-- [ ] Config GUI (optional)
-- [ ] Default character variations
-
----
-
-## Phase 2: Polish
-
-### Planned Features
-
-- [ ] **Improved Skin System**
-  - Dynamic texture loading
-  - Skin preview in commands
-  - Online skin fetching (by username)
-
-- [ ] **Enhanced Chat UI**
-  - Typing indicator animation
-  - Message timestamps
-  - Copy message feature
-  - Conversation export
-
-- [ ] **Better World Integration**
-  - Nearby structure detection
-  - Player inventory awareness (optional)
-  - Recent mob encounters
-  - Achievement/advancement awareness
-
-- [ ] **Quality of Life**
-  - In-game character editor GUI
-  - Skin selector UI
-  - Provider status indicator
-  - Chat history persistence (optional)
-
-- [ ] **Performance**
-  - Response caching
-  - Prompt optimization
-  - Memory usage improvements
+| PR | Feature | Status |
+|----|---------|--------|
+| #1 | Quest notifications | Merged |
+| #2 | Quest commands | Merged |
+| #3 | Conversation persistence | Merged |
+| #4 | Thinking particles | Merged |
+| #5 | Chat sounds | Merged |
+| #6 | Default characters | Merged |
+| #7 | Feature toggles, event tracking, item awareness | Merged |
+| #8 | NPC behaviour modes (stationary, anchored, follow, hiding) | Merged |
 
 ---
 
-## Phase 3: Multi-Loader Support
+## Phase 2: Polish (In Progress)
+
+### Planned PRs
+
+| PR | Feature | Priority | Complexity | Status |
+|----|---------|----------|------------|--------|
+| #9 | Emotion/mood system | High | Medium | Planned |
+| #10 | Custom quest rewards | Medium | Low | Planned |
+| #11 | NPC-to-NPC conversations | High | High | Planned |
+| #12 | Voice synthesis (TTS) | Medium | High | Planned |
+| #13 | Relationship system | Medium | Medium | Planned |
+
+### Additional Polish Items
+
+- [ ] Improved skin system (online fetching)
+- [ ] Enhanced chat UI (timestamps, copy, export)
+- [ ] In-game character editor GUI
+- [ ] Config GUI integration
+- [ ] Performance profiling and optimization
+
+---
+
+## Phase 3: Extended Features (Future)
+
+### Long-Term Memory
+- [ ] Vector embedding storage for conversations
+- [ ] Cross-session memory retrieval
+- [ ] Semantic search for relevant memories
+- [ ] Memory importance scoring and pruning
+
+### Advanced AI Features
+- [ ] Adaptive personality evolution
+- [ ] Player profile building
+- [ ] Emotional state machine
+- [ ] Context-aware topic selection
+
+### NPC Behaviours
+- [ ] Daily schedules (sleep, work, eat)
+- [ ] Combat companion mode
+- [ ] Trading with dynamic pricing
+- [ ] Group/faction behaviours
+
+### Quest System Expansion
+- [ ] Quest chains with dependencies
+- [ ] Branching quest outcomes
+- [ ] Timed quests
+- [ ] Multiplayer quest sharing
+
+### Mod Integration
+- [ ] Public API for other mods
+- [ ] JEI integration
+- [ ] Create mod integration
+- [ ] Curios/accessories support
+
+---
+
+## Phase 4: Multi-Loader Support (Future)
 
 ### Fabric Port
-
 - [ ] Create Fabric-compatible project structure
 - [ ] Implement Fabric networking
 - [ ] Fabric config system
 - [ ] Fabric entity registration
 - [ ] Testing on Fabric
 
-### Forge (Legacy) Port
-
-- [ ] Evaluate 1.20.x Forge support demand
-- [ ] Create Forge-compatible structure
-- [ ] Implement Forge networking
-- [ ] Testing on Forge
-
 ### Unified Codebase
-
 - [ ] Extract common code module
 - [ ] Platform abstraction layer
 - [ ] Automated multi-build system
@@ -115,57 +121,26 @@ This document tracks the development progress and planned features.
 
 ---
 
-## Phase 4: Extended Features
+## Known Issues
 
-### Quest System
-
-- [ ] Simple quest data structure
-- [ ] Quest assignment by NPCs
-- [ ] Progress tracking
-- [ ] Completion detection
-- [ ] Rewards system
-- [ ] Quest chains
-
-### Voice Synthesis
-
-- [ ] Research TTS options
-- [ ] Local TTS integration (e.g., Piper)
-- [ ] Character voice configuration
-- [ ] Audio playback system
-- [ ] Lip sync (stretch goal)
-
-### NPC Relationships
-
-- [ ] NPC-to-NPC conversation system
-- [ ] Relationship tracking
-- [ ] Group conversations
-- [ ] Overheard dialogue
-
-### Advanced AI Features
-
-- [ ] Long-term memory persistence
-- [ ] Cross-session continuity
-- [ ] Player profile building
-- [ ] Adaptive personality
-- [ ] Emotional states
-
-### Mod Integration
-
-- [ ] API for other mods
-- [ ] JEI integration (show NPC info)
-- [ ] Curios/accessories support
-- [ ] Create mod integration
-- [ ] Supplementaries integration
+| Issue | Severity | Status |
+|-------|----------|--------|
+| Skin loading can fail silently | Low | Known |
+| Rate limit UX on first interaction | Low | Known |
+| HIDING NPCs may get stuck in corners | Low | Known |
 
 ---
 
-## Known Issues
+## Technical Debt
 
-| Issue | Priority | Status |
-|-------|----------|--------|
-| Skin loading incomplete | Medium | In Progress |
-| No persistence across restarts | Low | Planned |
-| Rate limit UX could be better | Low | Planned |
+| Item | Impact | Effort | Status |
+|------|--------|--------|--------|
+| Unit tests for core classes | - | - | Done (89 tests) |
+| Integration tests | Medium | High | Planned |
+| Error message improvements | Medium | Low | Planned |
+| Packet handling refactor | Low | Medium | Backlog |
+| Internal API documentation | Low | Medium | Backlog |
+| Performance profiling | Unknown | Medium | Planned |
 
 ---
 
@@ -173,52 +148,44 @@ This document tracks the development progress and planned features.
 
 *Features under consideration but not committed:*
 
-- [ ] NPC following player (companion mode)
-- [ ] NPC combat assistance
-- [ ] NPC building assistance
-- [ ] Multiplayer NPC ownership
-- [ ] NPC trading integration
-- [ ] Seasonal/event behaviors
-- [ ] Dream sequences
+- [ ] Dream sequences (special night conversations)
 - [ ] NPC death/respawn mechanics
 - [ ] Custom NPC sounds/voices
 - [ ] VR support considerations
-
----
-
-## Technical Debt
-
-- [x] Add unit tests for core classes (89 tests added)
-- [ ] Add integration tests
-- [ ] Improve error messages
-- [ ] Refactor packet handling
-- [ ] Document internal APIs
-- [ ] Performance profiling
+- [ ] Multiplayer NPC ownership
+- [ ] Seasonal/event behaviours
+- [ ] NPC building assistance
+- [ ] Physical installation toolkit
 
 ---
 
 ## Version Targets
 
-| Version | Target Date | Scope |
-|---------|-------------|-------|
-| 0.1.0-alpha | TBD | Core MVP, Ollama only |
-| 0.2.0-alpha | TBD | All providers, basic UI |
-| 0.5.0-beta | TBD | Full MVP feature-complete |
-| 1.0.0 | TBD | Stable release |
-| 1.1.0 | TBD | Quest system |
-| 2.0.0 | TBD | Multi-loader support |
+| Version | Scope | Status |
+|---------|-------|--------|
+| 0.8.0-beta | MVP + PRs #1-8 | Current |
+| 0.9.0-beta | + Emotion, Rewards (#9-10) | Planned |
+| 1.0.0 | + NPC-NPC, TTS, Relationships (#11-13) | Planned |
+| 1.1.0 | Quest chains, combat companion | Future |
+| 2.0.0 | Multi-loader support | Future |
 
 ---
 
 ## Contributing to Roadmap
 
-Have feature ideas? 
+Have feature ideas?
 
 1. Check if already listed above
-2. Open a GitHub Discussion
-3. Describe the use case
-4. Community votes on priority
+2. Open a GitHub Issue
+3. Describe the use case and user value
+4. Community discussion on priority
 5. Maintainers add to roadmap
+
+---
+
+## PR Implementation Plans
+
+See [PR_PLAN.md](PR_PLAN.md) for detailed implementation plans for upcoming PRs.
 
 ---
 

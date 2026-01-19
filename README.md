@@ -1,310 +1,384 @@
 # Storyteller NPCs
 
-[![Minecraft](https://img.shields.io/badge/Minecraft-1.21.4-green.svg)](https://minecraft.net)
-[![NeoForge](https://img.shields.io/badge/NeoForge-21.4.x-orange.svg)](https://neoforged.net)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+AI-powered conversational NPCs for Minecraft that respond dynamically to player input using large language models.
 
-**AI-powered NPCs for Minecraft that actually talk back.**
-
-Storyteller NPCs adds characters to your Minecraft world that you can have real conversations with. Ask them questions, hear their stories, discover their secrets. Each NPC has their own personality, memories, and hidden motives - powered by large language models running locally or in the cloud.
+Storyteller NPCs solves the problem of static, scripted dialogue in Minecraft. Rather than pre-written responses, NPCs use LLMs (running locally via Ollama or through cloud APIs) to generate contextual responses based on their defined personality, the game world state, and conversation history. This is useful for adventure map creators, educational installations, and anyone who wants NPCs that feel alive rather than mechanical.
 
 ---
 
-## What is this?
+## Project Status and Maturity
 
-Vanilla Minecraft villagers are disappointing. They grunt, they trade, they get killed by zombies. They don't *talk*.
+**Status: Beta**
 
-Storyteller NPCs fixes that. You spawn an NPC, give them a personality, and have actual conversations:
+The mod is functional and actively maintained. Core features (conversations, personalities, quests, persistence) are stable. The API and configuration format may change between minor versions. Expect occasional bugs, particularly around edge cases in LLM response parsing.
 
-```
-You: "What brings you to this village?"
-
-Eldric: "Ah, a curious soul. I came seeking the ruins beneath
-the mountain - they say an artifact lies buried there. But the
-nights grow dangerous, and I find myself... lingering. Tell me,
-have you seen anything unusual in these lands?"
-```
-
-The NPC remembers what you've discussed. They know if it's raining. They notice you're hurt. They have secrets they'll only reveal after you've earned their trust.
+Active maintenance means:
+- Bug reports are triaged within a week
+- Security issues are addressed promptly
+- Pull requests are reviewed, though turnaround varies
 
 ---
 
-## Why use it?
+## Why This Project Exists
 
-**For adventure map creators:** Build immersive quests with NPCs that guide players through stories, give contextual hints, and react to player choices - without scripting every possible dialogue.
+Existing Minecraft NPC solutions fall into two categories: simple villager-like entities with no dialogue, or complex scripting systems that require writing every possible response. Neither approach creates NPCs that feel like actual characters.
 
-**For server owners:** Add memorable characters to spawn towns, quest hubs, or special locations. NPCs can serve as guides, merchants with personality, or mysterious figures with secrets to uncover.
+Large language models change this equation. An LLM can generate contextually appropriate responses to arbitrary player input, maintaining character consistency without exhaustive scripting. The challenge is integrating LLMs into Minecraft's architecture cleanly.
 
-**For modpack developers:** Create narrative experiences that feel alive. NPCs respond naturally to any player input, making your world feel less like a game and more like a story.
-
-**For solo players:** Give your world some company. Have someone to talk to on those long mining trips. Create characters that feel like actual inhabitants of your world.
-
----
-
-## How it works
-
-1. **You spawn an NPC** with `/storyteller spawn`
-2. **Right-click to chat** - a dialogue screen opens
-3. **Type anything** - your message goes to an AI language model
-4. **Get a response** - the NPC replies in character, aware of time, weather, biome, and your conversation history
-
-The AI runs locally via [Ollama](https://ollama.ai/) (free, private, no internet needed) or through cloud APIs (Claude, OpenAI) for stronger responses.
+Storyteller NPCs was built with these principles:
+- **Local-first**: Default to Ollama so users control their data and costs
+- **Character-driven**: Personalities defined in simple JSON, not code
+- **World-aware**: NPCs know about time, weather, biomes, and player state
+- **Non-blocking**: LLM requests happen asynchronously to avoid server lag
 
 ---
 
-## Features
+## Core Features
 
-- **Real conversations** - NPCs respond to anything you type, not canned dialogue
-- **Persistent memory** - They remember past conversations with you
-- **World awareness** - NPCs know biome, time of day, weather, and your health
-- **Player awareness** - NPCs notice what you're holding and comment on your gear
-- **Achievement reactions** - NPCs react when you earn advancements or kill bosses
-- **Auto quests** - NPCs can give you quests that are tracked automatically
-- **Custom personalities** - Define traits, backstories, speech patterns, and secrets
-- **Custom skins** - Any Minecraft skin works
-- **Local-first** - Ollama runs on your machine, completely private
-- **Cloud options** - Claude and OpenAI for enhanced responses
-- **Eira integration** - Bridge to physical world via redstone and HTTP webhooks
+- **Dynamic conversations**: NPCs respond to any text input using configured LLM
+- **Persistent memory**: Conversation history survives server restarts
+- **World context**: NPCs aware of biome, time, weather, player health, held items
+- **Automatic quest detection**: Parses NPC dialogue for quest-like statements and tracks progress
+- **Player event awareness**: NPCs react to recent advancements and notable kills
+- **Character system**: JSON-defined personalities with traits, backstories, secrets, and speech patterns
+- **Custom skins**: Standard Minecraft skin format (64x64 PNG)
+- **Multiple LLM providers**: Ollama (local), Claude (Anthropic), OpenAI
+- **Behaviour modes**: Stationary, anchored to location, follow player, or hide from player
+- **Eira integration**: Redstone and webhook bridge for physical installations
+
+### Non-Features
+
+This project does not aim to:
+- Replace scripted dialogue systems for deterministic gameplay
+- Provide voice synthesis or text-to-speech
+- Support multiplayer conversations (one player per NPC at a time)
+- Work without an LLM backend (Ollama or API key required)
 
 ---
 
 ## Quick Start
 
-### 1. Install Ollama
+### Prerequisites
+- Minecraft 1.21.4 with NeoForge 21.4.x
+- Java 21
+- Ollama installed and running (or Claude/OpenAI API key)
 
-Download from [ollama.ai](https://ollama.ai/), then:
+### Installation
 
-```bash
-ollama pull llama3.1:8b
-ollama serve
-```
+1. Install Ollama from [ollama.ai](https://ollama.ai/)
+2. Pull a model and start the server:
+   ```bash
+   ollama pull llama3.1:8b
+   ollama serve
+   ```
+3. Place the mod JAR in your `mods/` folder
+4. Launch Minecraft
 
-### 2. Install the mod
-
-Drop the JAR in your `mods/` folder. Requires NeoForge 21.4.x and Java 21.
-
-### 3. Spawn an NPC
+### First NPC
 
 ```
 /storyteller spawn
 ```
 
-Right-click to start talking.
+Right-click the spawned NPC to open the chat interface. Type anything.
 
 ---
 
-## Configuration
+## Usage Overview
 
-After first launch, edit `config/storyteller-common.toml`:
+### Spawning NPCs
+
+```
+/storyteller spawn                    # Default character
+/storyteller spawn village-elder      # Named character
+/storyteller list                     # Available characters
+```
+
+### Character Definition
+
+Characters are JSON files in `config/storyteller/characters/`. Example:
+
+```json
+{
+  "id": "village-elder",
+  "name": "Old Mira",
+  "personality": {
+    "traits": ["wise", "cautious"],
+    "backstory": "Lived here for sixty years.",
+    "motivation": "Protect the village"
+  },
+  "hidden_agenda": {
+    "secret": "Knows the temple location",
+    "reveal_conditions": ["After 5+ conversations"]
+  },
+  "speech_style": {
+    "vocabulary": "simple, folksy",
+    "common_phrases": ["In my day..."]
+  }
+}
+```
+
+### Behaviour Modes
+
+NPCs support four behaviour modes:
+
+| Mode | Description |
+|------|-------------|
+| `stationary` | Stays in place (default) |
+| `anchored` | Wanders within radius of anchor point |
+| `follow` | Follows a specific player |
+| `hiding` | Hides from players using line-of-sight |
+
+```
+/storyteller behavior nearest anchored 15
+/storyteller behavior nearest follow
+/storyteller behavior nearest hiding
+```
+
+### Configuration
+
+Edit `config/storyteller-common.toml`:
 
 ```toml
 [llm]
-provider = "OLLAMA"  # or CLAUDE, OPENAI
+provider = "OLLAMA"
 
 [llm.ollama]
 endpoint = "http://localhost:11434"
 model = "llama3.1:8b"
 ```
 
-For Claude or OpenAI, add your API key to the respective section.
+---
+
+## Architecture and Design Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        Client                                │
+│  NPCChatScreen ──────────────────────► StorytellerNPCRenderer│
+└──────────────────────────┬──────────────────────────────────┘
+                           │ Packets
+┌──────────────────────────▼──────────────────────────────────┐
+│                        Server                                │
+│  StorytellerNPC ◄────► NPCManager ◄────► NPCCharacter       │
+│        │                                                     │
+│        ▼                                                     │
+│  ConversationHistory ◄──► LLMManager ◄──► Providers         │
+│        │                                    (Ollama/Claude)  │
+│        ▼                                                     │
+│  WorldContext, QuestManager, PlayerEventTracker             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key components:**
+- `StorytellerNPC`: Entity with synced data, AI goals, and conversation state
+- `LLMManager`: Async HTTP requests to LLM providers via CompletableFuture
+- `ConversationHistory`: Per-player message storage with persistence
+- `WorldContext`: Extracts game state (biome, time, weather) for prompts
+- `NPCCharacter`: Deserialised character JSON with personality data
+
+**Extension points:**
+- Add LLM providers by implementing `LLMProvider` interface
+- Add AI behaviours by creating custom `Goal` classes
+- Add world context by extending `WorldContext.build()`
 
 ---
 
-## Creating Characters
+## Contributing
 
-Create JSON files in `config/storyteller/characters/`:
+Contributions welcome in these areas:
+- Bug fixes with clear reproduction steps
+- New LLM provider integrations
+- Performance improvements to pathfinding and LOS checks
+- Documentation improvements
 
-```json
-{
-  "id": "village-elder",
-  "name": "Old Mira",
-  "title": "The Village Elder",
+Before starting significant work, open an issue to discuss the approach. This avoids wasted effort on changes that don't fit the project direction.
 
-  "personality": {
-    "traits": ["wise", "cautious", "kind"],
-    "backstory": "Lived in this village for 60 years. Remembers when the forest was safe.",
-    "motivation": "Protect the village and its people",
-    "quirks": ["calls everyone 'child'", "always mentions the weather"]
-  },
+**Expectations:**
+- Code compiles with `./gradlew build`
+- New features include basic documentation
+- Follow existing code style (no enforced formatter, just consistency)
 
-  "hidden_agenda": {
-    "secret": "Knows the location of the ancient temple but won't reveal it until she trusts you",
-    "reveal_conditions": ["After 5+ conversations", "If player helps defend the village"]
-  },
-
-  "speech_style": {
-    "vocabulary": "simple, folksy",
-    "common_phrases": ["In my day...", "The old ways taught us..."]
-  }
-}
-```
-
-Or use the command: `/storyteller create "Old Mira"`
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## Commands
+## Governance and Decision-Making
 
-| Command | Description |
-|---------|-------------|
-| `/storyteller` | Show help |
-| `/storyteller spawn [name]` | Spawn default or named NPC |
-| `/storyteller list` | List available characters |
-| `/storyteller create <name>` | Create new character template |
-| `/storyteller reload` | Reload configurations |
-| `/storyteller status` | Show LLM connection status |
+This project is maintained by the Eira educational organisation. Day-to-day decisions are made by active maintainers. Significant changes (API breaks, new dependencies, architectural shifts) are discussed in GitHub issues before implementation.
+
+Disagreements are resolved through discussion. If consensus cannot be reached, maintainers have final say for their areas of responsibility.
+
+Roadmap items are tracked in [docs/ROADMAP.md](docs/ROADMAP.md). The roadmap reflects current intentions, not commitments.
 
 ---
 
-## Recommended Models
+## Licence and Usage Expectations
 
-| Model | VRAM | Notes |
-|-------|------|-------|
-| `llama3.1:8b` | ~5GB | Good balance of speed and quality |
-| `mistral:7b-instruct` | ~4GB | Fast, good for roleplay |
-| `llama3.2:3b` | ~2GB | For lower-spec machines |
+MIT License. See [LICENSE](LICENSE).
 
----
-
-## Troubleshooting
-
-**NPC says "Ollama is not available"**
-- Run `ollama serve` in a terminal
-- Check `ollama list` shows your model
-
-**Responses are slow**
-- Use a smaller model
-- Make sure Ollama has enough RAM
-- Responses are limited to ~150 tokens by default
-
-**NPC won't respond**
-- Check `/storyteller status`
-- Look at server logs for errors
+The project is free for any use, including commercial. However, please be mindful that:
+- LLM outputs may contain unexpected content; implement appropriate filtering for public-facing deployments
+- Cloud API costs are your responsibility
+- The Eira ecosystem is designed for educational contexts
 
 ---
 
-## Dynamic NPC Features
+## Community and Support
 
-### Achievement & Event Reactions
+- **Bug reports**: [GitHub Issues](https://github.com/teenne/Eira-NPC/issues)
+- **Questions**: GitHub Discussions or Issues
+- **Feature requests**: Open an issue with rationale
 
-NPCs are aware of your recent accomplishments and will react naturally:
+Response times vary. Maintainers are volunteers with other commitments. Well-documented issues with reproduction steps receive faster attention than vague reports.
 
-```
-[You just earned "Monster Hunter" advancement]
-
-You: "Hello there!"
-
-Eldric: "Well met, brave one! Word travels fast - I heard you've
-been slaying monsters. The village could use someone with your skills."
-```
-
-**Events NPCs notice:**
-- Advancements earned (last 5 minutes)
-- Boss kills (Ender Dragon, Wither, Elder Guardian, Warden)
-- Notable mob kills (Evoker, Ravager, etc.)
-- Rare items you're carrying (Netherite gear, Elytra, Totems)
-
-### Item Awareness
-
-NPCs see what you're holding and can comment on it:
-
-```
-[You're holding an enchanted Diamond Sword]
-
-You: "Can you help me?"
-
-Blacksmith: "That's a fine blade you've got there - enchanted too!
-I see you take your craft seriously. What do you need?"
-```
-
-NPCs notice:
-- Main hand and off-hand items
-- Enchantments on gear
-- Damaged/worn equipment
-- Rare and valuable items
-
-### Automatic Quest System
-
-When an NPC says something quest-like, it's automatically tracked:
-
-```
-Merchant: "I desperately need 10 iron ingots for my forge.
-Bring them to me and I'll reward you handsomely!"
-
-[Quest Added: Collect 10 iron ingot]
-```
-
-**Quest types detected:**
-- **Collection quests**: "bring me X", "find me X", "collect X"
-- **Kill quests**: "kill X zombies", "slay the dragon"
-
-Quests are tracked per-player and NPCs remember your progress:
-
-```
-[You return with 10 iron ingots]
-
-You: "I have those ingots you wanted."
-
-Merchant: "Excellent! You've fulfilled your promise. Here is your reward."
-```
+Please be respectful and constructive. Demanding responses or aggressive language will be ignored.
 
 ---
 
 ## Part of the Eira Ecosystem
 
-Storyteller NPCs is part of **Eira** - a collection of Minecraft mods for immersive educational experiences, maintained by a non-commercial educational organization.
+Storyteller NPCs integrates with other Eira mods for physical-digital bridging:
 
-| Mod | Purpose | Repository |
-|-----|---------|------------|
-| **Eira Core** | Foundation - event bus, teams, story framework, API server | [teenne/eira-core](https://github.com/teenne/eira-core) |
-| **Eira Relay** | Physical bridge - HTTP blocks convert webhooks ↔ redstone | [Narratimo/HappyHttpMod](https://github.com/Narratimo/HappyHttpMod) |
-| **Eira NPC** | AI characters - LLM-powered dynamic conversations | This repository |
+| Mod | Purpose |
+|-----|---------|
+| **Eira Core** | Event bus, teams, story framework |
+| **Eira Relay** | HTTP ↔ redstone conversion |
+| **Eira NPC** | This project |
 
-### How they work together
+Together, these enable installations where physical world events (button presses, sensor triggers) affect in-game NPCs, and in-game events trigger physical outputs (lights, displays).
 
-**Physical → Minecraft:** A visitor scans a QR code → webhook hits Eira Relay's HTTP Receiver block → redstone signal triggers NPC dialogue → the NPC "senses" something and speaks to nearby players.
+See [docs/EIRA_INTEGRATION.md](docs/EIRA_INTEGRATION.md) for setup.
 
-**Minecraft → Physical:** Player discovers an NPC's secret → NPC emits redstone → Eira Relay's HTTP Sender fires webhook → room lights change color or a display updates.
+---
 
-This enables escape rooms, museum exhibits, educational installations, and interactive storytelling that spans both digital and physical spaces.
+## Closing Note
 
-### Enabling Eira Integration
+This project exists because we wanted NPCs that felt like characters rather than vending machines. It grew from experiments in educational game design, where static dialogue trees couldn't adapt to diverse learner questions.
 
-In `storyteller-common.toml`:
+If you're building something similar—adventure maps, educational games, interactive exhibits—we hope this saves you time. If you improve it along the way, consider contributing back.
 
-```toml
-[integration]
-eiraEnabled = true
-emitRedstoneOnEvents = true
+---
 
-[integration.webhooks]
-enabled = true
-onSecretRevealed = "https://your-server.com/webhook"
-```
+## Development Roadmap
 
-See [Eira Integration Guide](docs/EIRA_INTEGRATION.md) for full setup.
+### Completed Features
+
+| Feature | PR | Status |
+|---------|------|--------|
+| Core NPC entity & rendering | - | Done |
+| LLM integration (Ollama, Claude, OpenAI) | - | Done |
+| Character JSON system | - | Done |
+| World context awareness | - | Done |
+| Custom chat GUI | - | Done |
+| Conversation history | - | Done |
+| Quest notifications | #1 | Done |
+| Quest commands | #2 | Done |
+| Conversation persistence | #3 | Done |
+| Thinking particles | #4 | Done |
+| Chat sounds | #5 | Done |
+| Default characters | #6 | Done |
+| Feature config toggles | #7 | Done |
+| Player event tracking | #7 | Done |
+| Item awareness | #7 | Done |
+| **NPC behaviour modes** | #8 | Done |
+
+### In Progress / Next Up
+
+| Feature | Priority | Complexity | Description |
+|---------|----------|------------|-------------|
+| Emotion/mood system | High | Medium | NPCs have emotional states that affect responses |
+| NPC-to-NPC conversations | High | High | NPCs can talk to each other within earshot |
+| Voice synthesis (TTS) | Medium | High | Text-to-speech for NPC dialogue |
+| Relationship tracking | Medium | Medium | NPCs remember and react to relationship quality |
+| Combat companion mode | Medium | Medium | NPCs can fight alongside players |
+| Custom quest rewards | Medium | Low | NPCs give items/effects on quest completion |
+| In-game character editor | Low | Medium | GUI for creating characters without JSON |
+| Fabric/Forge ports | Low | High | Multi-loader support |
+
+### Future Vision
+
+| Feature | Description |
+|---------|-------------|
+| **Long-term memory** | NPCs remember across sessions using vector embeddings |
+| **Adaptive personality** | NPCs evolve based on player interactions |
+| **Group conversations** | Multiple players talking to one NPC |
+| **NPC schedules** | NPCs have daily routines (sleep, work, eat) |
+| **NPC trading** | Dynamic trading based on relationship and scarcity |
+| **Dream sequences** | Special conversation modes triggered at night |
+| **Mod integration API** | Public API for other mods to interact with NPCs |
+| **Physical installation toolkit** | Turnkey system for museums/exhibits |
+
+---
+
+## Tech Debt, Bugs, and Unfinished Work
+
+### Known Bugs
+
+| Bug | Severity | Workaround |
+|-----|----------|------------|
+| Skin loading can fail silently | Low | Check file exists in `config/storyteller/skins/` |
+| Rate limit message shows even on first interaction occasionally | Low | Wait a moment and retry |
+| HIDING mode NPCs may get stuck in corners | Low | Set to STATIONARY temporarily |
+
+### Technical Debt
+
+| Item | Impact | Effort |
+|------|--------|--------|
+| No integration tests | Medium | High - need mock LLM server |
+| Packet handling is verbose | Low | Medium - refactor to use record codecs |
+| Error messages are developer-focused | Medium | Low - add user-friendly messages |
+| No performance profiling done | Unknown | Medium - profile with large conversation histories |
+| `rebuildGoals()` clears all goals | Low | Low - could be more surgical |
+| Conversation history unbounded in memory | Medium | Low - add max in-memory limit |
+
+### Unfinished / Partial Implementations
+
+| Item | Current State | Remaining Work |
+|------|---------------|----------------|
+| Online skin fetching | Not started | Implement username → skin URL → texture |
+| Config GUI | Not started | NeoForge config screen integration |
+| Lip sync for TTS | Not started | Research and implement |
+| Cross-NPC memory | Not started | Shared context between NPCs |
+| Quest chains | Not started | Sequential quest dependencies |
+
+### Code Quality Notes
+
+- Test coverage: ~89 tests, focused on serialisation and history
+- Missing: integration tests, pathfinding tests, packet tests
+- Documentation: Javadoc sparse, inline comments adequate
+- Thread safety: `ConcurrentHashMap` used correctly, but no stress testing done
+
+---
+
+## Recommended Next Development Stages
+
+Based on user value, technical feasibility, and dependencies:
+
+### Stage 1: Emotion System (PR #9)
+**Why first:** Foundational for making NPCs feel more alive. Affects response generation without complex dependencies.
+
+### Stage 2: Custom Quest Rewards (PR #10)
+**Why second:** Completes the quest loop. Players need tangible rewards for engagement.
+
+### Stage 3: NPC-to-NPC Conversations (PR #11)
+**Why third:** High user value. Creates emergent storytelling. Requires emotion system to be meaningful.
+
+### Stage 4: Voice Synthesis (PR #12)
+**Why fourth:** Major accessibility and immersion improvement. Can be developed in parallel.
+
+### Stage 5: Relationship System (PR #13)
+**Why fifth:** Builds on emotion system. Enables long-term engagement mechanics.
+
+See [docs/PR_PLAN.md](docs/PR_PLAN.md) for detailed implementation plans.
 
 ---
 
 ## Documentation
 
-- [User Guide](docs/USER_GUIDE.md) - Complete setup instructions
 - [Character Guide](docs/CHARACTER_GUIDE.md) - Creating custom NPCs
-- [Eira Integration](docs/EIRA_INTEGRATION.md) - Physical world bridge
 - [Architecture](docs/ARCHITECTURE.md) - Technical details
-
----
-
-## Building from Source
-
-```bash
-git clone https://github.com/teenne/Eira-NPC.git
-cd Eira-NPC
-./gradlew build
-```
-
----
-
-## License
-
-MIT License - see [LICENSE](LICENSE)
+- [Eira Integration](docs/EIRA_INTEGRATION.md) - Physical world bridge
+- [FAQ](docs/FAQ.md) - Common questions
+- [Changelog](CHANGELOG.md) - Version history
+- [PR Plan](docs/PR_PLAN.md) - Detailed implementation roadmap
