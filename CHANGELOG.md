@@ -8,11 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Quest Notifications** (PR #1)
+  - Chat notifications when quests are added
+  - Progress updates for kill quests
+  - Completion messages with checkmark
+
+- **Quest Commands** (PR #2)
+  - `/storyteller quests` - List all active quests
+  - `/storyteller quests clear` - Clear all quests (admin)
+
+- **Conversation Persistence** (PR #3)
+  - Conversations saved to disk automatically
+  - Survives server restarts
+  - Configurable max messages per conversation
+  - Storage in `config/storyteller/conversations/`
+
+- **Thinking Particles** (PR #4)
+  - Enchantment particles appear above NPC while generating response
+  - Can be disabled in client config
+
+- **Chat Sounds** (PR #5)
+  - Plays villager sound when NPC responds
+  - Can be disabled in client config
+
+- **Default Characters** (PR #6)
+  - `village-elder.json` - Wise grandmother figure
+  - `mysterious-stranger.json` - Enigmatic helper
+  - `village-guard.json` - Knight seeking redemption
+
+- **Feature Config Toggles** (PR #7)
+  - `enableQuestSystem` - Toggle automatic quest detection
+  - `showQuestNotifications` - Toggle quest chat messages
+  - `showQuestProgress` - Toggle kill quest progress updates
+  - `enableEventTracking` - Toggle player event tracking
+  - `eventExpiryMinutes` - Configure event expiry time
+  - `enableItemAwareness` - Toggle NPC item awareness
+
 - **Player Event Tracking**
   - NPCs react to recent player achievements (advancements, boss kills)
   - Notable mob kills tracked (Dragon, Wither, Warden, Evoker, etc.)
   - Rare item detection (Netherite gear, Elytra, Totems, enchanted items)
-  - Events expire after 5 minutes for relevance
+  - Events expire after configurable time (default 5 minutes)
 
 - **Automatic Quest System**
   - NPCs can give quests detected from natural dialogue
@@ -69,10 +105,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Fabric/Forge multi-loader support
-- Quest integration system
 - Voice synthesis (TTS)
 - NPC-to-NPC conversations
-- Persistent memory across server restarts
+- Custom quest rewards
 
 ---
 
