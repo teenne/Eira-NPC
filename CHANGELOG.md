@@ -9,11 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Test Infrastructure**
-  - JUnit 5, Mockito, MockWebServer, Awaitility dependencies
+  - JUnit 5, Mockito, Awaitility dependencies
   - 89 unit tests across 6 test classes
   - NPCCharacter JSON serialization tests
   - ConversationHistory thread safety tests
-  - LLM provider tests with MockWebServer
+  - LLM provider unit tests
+
+- **Documentation**
+  - Comprehensive USER_GUIDE.md with step-by-step setup instructions
+  - Complete configuration reference
+  - Troubleshooting guide
+  - Performance optimization tips
+
+### Changed
+- **HTTP Client**
+  - Replaced OkHttp with Java 21's built-in `java.net.http.HttpClient`
+  - Reduced JAR size from 2.7MB to ~100KB (no bundled dependencies)
+  - Better compatibility with NeoForge's modular classloader
 
 ### Fixed
 - **NeoForge 1.21.4 API Compatibility**
@@ -22,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed entity spawn API (EntitySpawnReason replaces MobSpawnType)
   - Fixed entity type registration with ResourceKey
   - Fixed damage handling (isInvulnerableTo instead of hurt override)
+
+- **Runtime Issues**
+  - Fixed NoClassDefFoundError for HTTP dependencies at runtime
 
 ### Planned
 - Fabric/Forge multi-loader support
@@ -85,7 +100,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical
 - NeoForge 1.21.4 support
 - Java 21 required
-- Async HTTP with OkHttp
+- Async HTTP with Java's built-in HttpClient
 - Thread-safe conversation history
 
 ---
@@ -111,5 +126,5 @@ Migration guides for future versions will be documented here.
 ## Links
 
 - [Documentation](docs/)
-- [Issue Tracker](https://github.com/yourusername/storyteller/issues)
+- [Issue Tracker](https://github.com/teenne/Eira-NPC/issues)
 - [Discord](#)

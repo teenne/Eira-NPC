@@ -661,4 +661,4 @@ Resources for Minecraft skins:
 
 - Check the [FAQ](FAQ.md)
 - Join our [Discord](#)
-- Open an [Issue](https://github.com/yourusername/storyteller/issues)
+- Open an [Issue](https://github.com/teenne/Eira-NPC/issues)

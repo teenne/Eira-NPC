@@ -35,17 +35,14 @@ dependencies {
     // Gson for JSON handling (LLM API communication)
     implementation("com.google.code.gson:gson:2.10.1")
 
-    // OkHttp for async HTTP requests to LLM APIs
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    // HTTP is handled by Java's built-in HttpClient (java.net.http)
+    // No external dependencies needed!
 
     // Testing frameworks
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
-
-    // For mocking OkHttp responses
-    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
 
     // For async testing
     testImplementation("org.awaitility:awaitility:4.2.0")
@@ -69,7 +66,7 @@ neoForge {
             gameDirectory.set(file("run"))
             programArguments.addAll("--username", "Dev", "--uuid", "00000000-0000-0000-0000-000000000000")
         }
-        
+
         create("server") {
             server()
             gameDirectory.set(file("run-server"))

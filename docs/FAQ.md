@@ -240,4 +240,4 @@ Long-term memory is planned. NPCs would remember important details across sessio
 
 - 📖 Read the [full documentation](docs/)
 - 💬 Join our [Discord](#)
-- 🐛 Open a [GitHub Issue](https://github.com/yourusername/storyteller/issues)
+- 🐛 Open a [GitHub Issue](https://github.com/teenne/Eira-NPC/issues)

@@ -18,6 +18,8 @@ A NeoForge mod that adds AI-powered NPCs to Minecraft. These characters can tell
 
 > **🎮 Transform your Minecraft experience** with NPCs that remember your conversations, have secrets to discover, and respond naturally to anything you say.
 
+> **📖 New to Storyteller?** Check out the [Complete User Guide](docs/USER_GUIDE.md) for step-by-step setup instructions.
+
 ## ✨ Features
 
 - 🎭 **Dynamic AI Characters** - NPCs with unique personalities, backstories, and hidden agendas
@@ -272,6 +274,16 @@ Storyteller NPCs integrates with [Eira Relay](https://github.com/eira/eira-relay
 4. Add `external_triggers` and `story_triggers` to character JSON
 
 See [Eira Integration Guide](docs/EIRA_INTEGRATION.md) for full documentation.
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [User Guide](docs/USER_GUIDE.md) | Complete setup and usage instructions |
+| [Character Guide](docs/CHARACTER_GUIDE.md) | Creating custom NPC characters |
+| [FAQ](docs/FAQ.md) | Frequently asked questions |
+| [Architecture](docs/ARCHITECTURE.md) | Technical implementation details |
+| [Eira Integration](docs/EIRA_INTEGRATION.md) | Physical world bridge |
 
 ## License
 
