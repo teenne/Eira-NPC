@@ -5,6 +5,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.levelgen.structure.Structure;
 
@@ -26,6 +27,8 @@ public class WorldContext {
     private int playerHunger;
     private boolean playerIsUnderground;
     private int lightLevel;
+    private String playerMainHandItem;
+    private String playerOffHandItem;
     
     private WorldContext() {
         this.nearbyStructures = new ArrayList<>();
@@ -75,7 +78,13 @@ public class WorldContext {
         
         // Light level at NPC
         ctx.lightLevel = level.getMaxLocalRawBrightness(npcPos);
-        
+
+        // Player held items
+        ItemStack mainHand = player.getMainHandItem();
+        ItemStack offHand = player.getOffhandItem();
+        ctx.playerMainHandItem = mainHand.isEmpty() ? null : formatItemName(mainHand);
+        ctx.playerOffHandItem = offHand.isEmpty() ? null : formatItemName(offHand);
+
         return ctx;
     }
     
@@ -101,6 +110,38 @@ public class WorldContext {
             case "the_end" -> "the End";
             default -> dimId.replace("_", " ");
         };
+    }
+
+    private static String formatItemName(ItemStack stack) {
+        StringBuilder sb = new StringBuilder();
+
+        // Get the display name (includes custom names)
+        String name = stack.getHoverName().getString();
+        sb.append(name);
+
+        // Add count if more than 1
+        if (stack.getCount() > 1) {
+            sb.append(" (x").append(stack.getCount()).append(")");
+        }
+
+        // Note if enchanted
+        if (stack.isEnchanted()) {
+            sb.append(" [enchanted]");
+        }
+
+        // Note if damaged
+        if (stack.isDamageableItem() && stack.getDamageValue() > 0) {
+            int maxDamage = stack.getMaxDamage();
+            int currentDamage = stack.getDamageValue();
+            int durabilityPercent = (int) ((1.0 - (double) currentDamage / maxDamage) * 100);
+            if (durabilityPercent < 25) {
+                sb.append(" [badly damaged]");
+            } else if (durabilityPercent < 50) {
+                sb.append(" [worn]");
+            }
+        }
+
+        return sb.toString();
     }
     
     private static List<String> findNearbyStructures(ServerLevel level, BlockPos pos, int radius) {
@@ -151,11 +192,24 @@ public class WorldContext {
         if (playerIsUnderground) {
             sb.append("- You are deep underground\n");
         }
-        
+
         if (!nearbyStructures.isEmpty()) {
             sb.append("- Nearby: ").append(String.join(", ", nearbyStructures)).append("\n");
         }
-        
+
+        // Player held items - NPCs can comment on these naturally
+        if (playerMainHandItem != null || playerOffHandItem != null) {
+            sb.append("- Player is holding: ");
+            if (playerMainHandItem != null && playerOffHandItem != null) {
+                sb.append(playerMainHandItem).append(" and ").append(playerOffHandItem);
+            } else if (playerMainHandItem != null) {
+                sb.append(playerMainHandItem);
+            } else {
+                sb.append(playerOffHandItem).append(" (off-hand)");
+            }
+            sb.append("\n");
+        }
+
         return sb.toString();
     }
     
@@ -168,4 +222,6 @@ public class WorldContext {
     public String getPlayerName() { return playerName; }
     public int getPlayerHealth() { return playerHealth; }
     public boolean isPlayerUnderground() { return playerIsUnderground; }
+    public String getPlayerMainHandItem() { return playerMainHandItem; }
+    public String getPlayerOffHandItem() { return playerOffHandItem; }
 }

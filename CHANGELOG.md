@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Player Event Tracking**
+  - NPCs react to recent player achievements (advancements, boss kills)
+  - Notable mob kills tracked (Dragon, Wither, Warden, Evoker, etc.)
+  - Rare item detection (Netherite gear, Elytra, Totems, enchanted items)
+  - Events expire after 5 minutes for relevance
+
+- **Automatic Quest System**
+  - NPCs can give quests detected from natural dialogue
+  - Collection quests: "bring me X", "find me X", "collect X"
+  - Kill quests: "kill X mobs", "slay X creatures"
+  - Per-player quest tracking with progress
+  - Quest completion detection (item count, mob kills)
+  - Quest context provided to NPCs for follow-up conversations
+
+- **Item Awareness**
+  - NPCs see player's main hand and off-hand items
+  - Enchantment detection ("[enchanted]")
+  - Durability status ("[worn]", "[badly damaged]")
+  - Item count for stacks
+
+- **LLM Warmup System**
+  - Model pre-loaded during mod initialization
+  - Faster first response times (2-5s instead of 30-60s)
+  - Warmup happens while player is in menus
+
+- **Returning Visitor Recognition**
+  - NPCs greet new visitors differently from returning ones
+  - Conversation history checked for previous interactions
+
 - **Test Infrastructure**
   - JUnit 5, Mockito, Awaitility dependencies
   - 89 unit tests across 6 test classes

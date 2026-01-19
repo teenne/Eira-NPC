@@ -11,6 +11,8 @@ import com.storyteller.network.OpenChatScreenPacket;
 import com.storyteller.network.NPCResponsePacket;
 import com.storyteller.npc.ConversationHistory;
 import com.storyteller.npc.NPCCharacter;
+import com.storyteller.npc.PlayerEventTracker;
+import com.storyteller.npc.QuestManager;
 import com.storyteller.npc.WorldContext;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -189,10 +191,13 @@ public class StorytellerNPC extends PathfinderMob {
         // Build context
         NPCCharacter npcChar = getCharacter();
         WorldContext worldContext = null;
-        
+
         if (ModConfig.COMMON.includeWorldContext.get() && level() instanceof ServerLevel serverLevel) {
             worldContext = WorldContext.build(serverLevel, player, this);
         }
+
+        // Check for notable items player is carrying
+        PlayerEventTracker.checkNotableItems(player);
         
         // Get conversation history
         List<ChatMessage> history = new ArrayList<>(
@@ -225,12 +230,36 @@ public class StorytellerNPC extends PathfinderMob {
         
         // Build system prompt
         String systemPrompt = npcChar.generateSystemPrompt(worldContext);
-        
+
         // Add conversation summary if there's history
         int convCount = ConversationHistory.getConversationCount(this.getUUID(), player.getUUID());
         if (convCount > 0) {
-            systemPrompt += "\n\n## Conversation Context\n" + 
+            systemPrompt += "\n\n## Conversation Context\n" +
                 ConversationHistory.buildConversationSummary(this.getUUID(), player.getUUID());
+        }
+
+        // Add recent player events (achievements, kills, items)
+        String eventContext = PlayerEventTracker.buildEventContext(player.getUUID());
+        if (eventContext != null) {
+            systemPrompt += "\n\n" + eventContext;
+        }
+
+        // Add quest context
+        String questContext = QuestManager.buildQuestContext(player.getUUID(), this.getUUID());
+        if (questContext != null) {
+            systemPrompt += "\n\n" + questContext;
+        }
+
+        // Check for completed quests
+        var completedQuests = QuestManager.checkQuestCompletion(player);
+        if (!completedQuests.isEmpty()) {
+            StringBuilder completedContext = new StringBuilder();
+            completedContext.append("## Quests Just Completed!\n");
+            completedContext.append("The player has completed these quests you gave them. Acknowledge and reward them!\n");
+            for (var quest : completedQuests) {
+                completedContext.append("- ").append(quest.description()).append("\n");
+            }
+            systemPrompt += "\n\n" + completedContext;
         }
         
         // Send to LLM
@@ -241,6 +270,9 @@ public class StorytellerNPC extends PathfinderMob {
             .thenAccept(response -> {
                 StorytellerMod.LOGGER.info("NPC {} response: {}", getNPCDisplayName(),
                     response.length() > 100 ? response.substring(0, 100) + "..." : response);
+
+                // Try to detect quests from the response
+                QuestManager.parseQuestsFromResponse(this.getUUID(), player.getUUID(), response);
 
                 // Back on server, send response to player
                 if (player.isAlive() && player.connection != null) {

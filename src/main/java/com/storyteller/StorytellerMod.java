@@ -6,6 +6,8 @@ import com.storyteller.integration.EiraIntegrationManager;
 import com.storyteller.llm.LLMManager;
 import com.storyteller.network.ModNetwork;
 import com.storyteller.npc.NPCManager;
+import com.storyteller.npc.PlayerEventTracker;
+import com.storyteller.npc.QuestManager;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -29,6 +31,8 @@ public class StorytellerMod {
     private final LLMManager llmManager;
     private final NPCManager npcManager;
     private final EiraIntegrationManager eiraManager;
+    private final PlayerEventTracker eventTracker;
+    private final QuestManager questManager;
     
     public StorytellerMod(IEventBus modEventBus, ModContainer modContainer) {
         instance = this;
@@ -41,6 +45,8 @@ public class StorytellerMod {
         this.llmManager = new LLMManager();
         this.npcManager = new NPCManager();
         this.eiraManager = new EiraIntegrationManager();
+        this.eventTracker = new PlayerEventTracker();
+        this.questManager = new QuestManager();
         
         // Register mod event listeners
         modEventBus.addListener(this::commonSetup);
@@ -50,6 +56,8 @@ public class StorytellerMod {
         
         // Register game event listeners
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(eventTracker);
+        NeoForge.EVENT_BUS.register(questManager);
         
         LOGGER.info("Storyteller mod initialized!");
     }

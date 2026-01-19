@@ -57,6 +57,9 @@ The AI runs locally via [Ollama](https://ollama.ai/) (free, private, no internet
 - **Real conversations** - NPCs respond to anything you type, not canned dialogue
 - **Persistent memory** - They remember past conversations with you
 - **World awareness** - NPCs know biome, time of day, weather, and your health
+- **Player awareness** - NPCs notice what you're holding and comment on your gear
+- **Achievement reactions** - NPCs react when you earn advancements or kill bosses
+- **Auto quests** - NPCs can give you quests that are tracked automatically
 - **Custom personalities** - Define traits, backstories, speech patterns, and secrets
 - **Custom skins** - Any Minecraft skin works
 - **Local-first** - Ollama runs on your machine, completely private
@@ -177,6 +180,73 @@ Or use the command: `/storyteller create "Old Mira"`
 **NPC won't respond**
 - Check `/storyteller status`
 - Look at server logs for errors
+
+---
+
+## Dynamic NPC Features
+
+### Achievement & Event Reactions
+
+NPCs are aware of your recent accomplishments and will react naturally:
+
+```
+[You just earned "Monster Hunter" advancement]
+
+You: "Hello there!"
+
+Eldric: "Well met, brave one! Word travels fast - I heard you've
+been slaying monsters. The village could use someone with your skills."
+```
+
+**Events NPCs notice:**
+- Advancements earned (last 5 minutes)
+- Boss kills (Ender Dragon, Wither, Elder Guardian, Warden)
+- Notable mob kills (Evoker, Ravager, etc.)
+- Rare items you're carrying (Netherite gear, Elytra, Totems)
+
+### Item Awareness
+
+NPCs see what you're holding and can comment on it:
+
+```
+[You're holding an enchanted Diamond Sword]
+
+You: "Can you help me?"
+
+Blacksmith: "That's a fine blade you've got there - enchanted too!
+I see you take your craft seriously. What do you need?"
+```
+
+NPCs notice:
+- Main hand and off-hand items
+- Enchantments on gear
+- Damaged/worn equipment
+- Rare and valuable items
+
+### Automatic Quest System
+
+When an NPC says something quest-like, it's automatically tracked:
+
+```
+Merchant: "I desperately need 10 iron ingots for my forge.
+Bring them to me and I'll reward you handsomely!"
+
+[Quest Added: Collect 10 iron ingot]
+```
+
+**Quest types detected:**
+- **Collection quests**: "bring me X", "find me X", "collect X"
+- **Kill quests**: "kill X zombies", "slay the dragon"
+
+Quests are tracked per-player and NPCs remember your progress:
+
+```
+[You return with 10 iron ingots]
+
+You: "I have those ingots you wanted."
+
+Merchant: "Excellent! You've fulfilled your promise. Here is your reward."
+```
 
 ---
 

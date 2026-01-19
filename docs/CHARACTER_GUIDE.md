@@ -362,6 +362,74 @@ Characters notice:
 - Player hunger (famished, hungry, satisfied)
 - Location (underground, surface, specific biome)
 
+### Player Items
+
+NPCs can see what the player is holding:
+
+- **Main hand item**: Weapon, tool, or item being held
+- **Off-hand item**: Shield, totem, map, etc.
+- **Enchantments**: Noted as "[enchanted]"
+- **Damage state**: "[worn]" or "[badly damaged]" for low durability
+
+This allows characters to comment on equipment naturally:
+
+```
+"That's quite the pickaxe you've got there - enchanted too!
+Planning some serious mining?"
+```
+
+### Player Achievements & Events
+
+NPCs receive context about recent player accomplishments (last 5 minutes):
+
+**Tracked Events:**
+- Advancements earned (except recipes)
+- Boss kills (Dragon, Wither, Warden, Elder Guardian)
+- Notable mob kills (Evoker, Ravager, Pillager captains)
+- Rare items being carried (Netherite, Elytra, Totems)
+
+Characters can react naturally to these events:
+
+```
+// Player just killed the Ender Dragon
+
+"Wait... I sense something different about you. The void's touch?
+You've faced the Dragon, haven't you? Few return from the End."
+```
+
+**Design tip:** Don't script specific reactions - just ensure your character has relevant opinions. The LLM will incorporate events naturally.
+
+### Quest Integration
+
+NPCs can give quests that are automatically detected and tracked:
+
+**Detectable quest patterns:**
+- "Bring me X items" → Collection quest
+- "Find X items" → Collection quest
+- "Collect X items" → Collection quest
+- "Kill X mobs" → Kill quest
+- "Slay X creatures" → Kill quest
+
+When designing characters who give quests, use clear language:
+
+```json
+"motivation": "Needs rare ingredients for potions and often asks travelers for help"
+```
+
+The character might then naturally say:
+```
+"If you could bring me 5 spider eyes, I could brew something
+special for your journey."
+```
+
+This automatically creates a tracked quest. When the player returns with the items, the NPC knows:
+
+```
+// Quest context provided to NPC:
+// Active Quests You Gave This Player:
+// - Collect 5 spider eyes (complete)
+```
+
 ---
 
 ## 7. Custom Skins
