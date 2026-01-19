@@ -202,7 +202,7 @@ public class StorytellerNPC extends PathfinderMob {
         // Handle greeting request - NPC initiates conversation
         boolean isGreeting = message.equals("[GREETING]");
         String actualMessage = isGreeting
-            ? "A visitor approaches. Greet them in character with a brief, intriguing opening line."
+            ? "A visitor approaches. Greet them with ONE short sentence only (under 10 words)."
             : message;
 
         // Add the new message to the list sent to LLM
