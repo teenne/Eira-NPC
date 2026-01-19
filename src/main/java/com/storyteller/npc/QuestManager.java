@@ -1,6 +1,7 @@
 package com.storyteller.npc;
 
 import com.storyteller.StorytellerMod;
+import com.storyteller.config.ModConfig;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,6 +45,11 @@ public class QuestManager {
     public static List<Quest> parseQuestsFromResponse(UUID npcId, ServerPlayer player, String response) {
         List<Quest> quests = new ArrayList<>();
         UUID playerId = player.getUUID();
+
+        // Check if quest system is enabled
+        if (!ModConfig.COMMON.enableQuestSystem.get()) {
+            return quests;
+        }
 
         // Try to detect item collection quests
         for (Pattern pattern : List.of(BRING_PATTERN, FIND_PATTERN, COLLECT_PATTERN)) {
@@ -224,6 +230,9 @@ public class QuestManager {
      * Notify player that a quest has been added
      */
     private static void notifyQuestAdded(ServerPlayer player, Quest quest) {
+        if (!ModConfig.COMMON.showQuestNotifications.get()) {
+            return;
+        }
         player.sendSystemMessage(
             Component.literal("[")
                 .withStyle(ChatFormatting.GRAY)
@@ -240,6 +249,9 @@ public class QuestManager {
      * Notify player of quest progress (for kill quests)
      */
     private static void notifyQuestProgress(ServerPlayer player, Quest quest) {
+        if (!ModConfig.COMMON.showQuestProgress.get()) {
+            return;
+        }
         player.sendSystemMessage(
             Component.literal("[")
                 .withStyle(ChatFormatting.GRAY)
@@ -258,6 +270,9 @@ public class QuestManager {
      * Notify player that a quest has been completed
      */
     private static void notifyQuestCompleted(ServerPlayer player, Quest quest) {
+        if (!ModConfig.COMMON.showQuestNotifications.get()) {
+            return;
+        }
         player.sendSystemMessage(
             Component.literal("[")
                 .withStyle(ChatFormatting.GRAY)

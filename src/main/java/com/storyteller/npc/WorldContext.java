@@ -1,5 +1,6 @@
 package com.storyteller.npc;
 
+import com.storyteller.config.ModConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
@@ -79,11 +80,13 @@ public class WorldContext {
         // Light level at NPC
         ctx.lightLevel = level.getMaxLocalRawBrightness(npcPos);
 
-        // Player held items
-        ItemStack mainHand = player.getMainHandItem();
-        ItemStack offHand = player.getOffhandItem();
-        ctx.playerMainHandItem = mainHand.isEmpty() ? null : formatItemName(mainHand);
-        ctx.playerOffHandItem = offHand.isEmpty() ? null : formatItemName(offHand);
+        // Player held items (if item awareness is enabled)
+        if (ModConfig.COMMON.enableItemAwareness.get()) {
+            ItemStack mainHand = player.getMainHandItem();
+            ItemStack offHand = player.getOffhandItem();
+            ctx.playerMainHandItem = mainHand.isEmpty() ? null : formatItemName(mainHand);
+            ctx.playerOffHandItem = offHand.isEmpty() ? null : formatItemName(offHand);
+        }
 
         return ctx;
     }
