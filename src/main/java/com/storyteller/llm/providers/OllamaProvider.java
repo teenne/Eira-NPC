@@ -61,6 +61,11 @@ public class OllamaProvider implements LLMProvider {
                     }
 
                     available.set(true);
+
+                    // Warmup: send a simple request to pre-load the model into memory
+                    // This eliminates the cold-start delay on first player interaction
+                    warmupModel();
+
                     return true;
                 } else {
                     StorytellerMod.LOGGER.error("Ollama connection failed: HTTP {}", response.statusCode());
@@ -160,5 +165,53 @@ public class OllamaProvider implements LLMProvider {
     public void shutdown() {
         available.set(false);
         // HttpClient doesn't need explicit shutdown
+    }
+
+    /**
+     * Send a minimal request to pre-load the model into GPU memory.
+     * This runs asynchronously so it doesn't block server startup.
+     */
+    private void warmupModel() {
+        CompletableFuture.runAsync(() -> {
+            try {
+                StorytellerMod.LOGGER.info("Warming up Ollama model {}...", model);
+                long startTime = System.currentTimeMillis();
+
+                JsonObject requestBody = new JsonObject();
+                requestBody.addProperty("model", model);
+                requestBody.addProperty("stream", false);
+
+                JsonArray messagesArray = new JsonArray();
+                JsonObject systemMsg = new JsonObject();
+                systemMsg.addProperty("role", "system");
+                systemMsg.addProperty("content", "You are a helpful assistant.");
+                messagesArray.add(systemMsg);
+
+                JsonObject userMsg = new JsonObject();
+                userMsg.addProperty("role", "user");
+                userMsg.addProperty("content", "Hi");
+                messagesArray.add(userMsg);
+
+                requestBody.add("messages", messagesArray);
+
+                JsonObject options = new JsonObject();
+                options.addProperty("num_predict", 5); // Minimal response
+                requestBody.add("options", options);
+
+                HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(endpoint + "/api/chat"))
+                    .timeout(Duration.ofSeconds(120))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(requestBody)))
+                    .build();
+
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+
+                long elapsed = System.currentTimeMillis() - startTime;
+                StorytellerMod.LOGGER.info("Ollama model warmup complete in {}ms - first NPC interaction will be fast!", elapsed);
+            } catch (Exception e) {
+                StorytellerMod.LOGGER.warn("Ollama warmup failed (non-critical): {}", e.getMessage());
+            }
+        });
     }
 }
