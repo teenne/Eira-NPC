@@ -9,6 +9,7 @@ import com.storyteller.entity.ModEntities;
 import com.storyteller.entity.StorytellerNPC;
 import com.storyteller.npc.NPCCharacter;
 import com.storyteller.npc.NPCManager;
+import com.storyteller.npc.QuestManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -83,8 +84,16 @@ public class ModCommands {
             .then(Commands.literal("status")
                 .executes(ModCommands::showStatus)
             )
+
+            // Quest management
+            .then(Commands.literal("quests")
+                .executes(ModCommands::listQuests)
+                .then(Commands.literal("clear")
+                    .executes(ModCommands::clearQuests)
+                )
+            )
         );
-        
+
         StorytellerMod.LOGGER.info("Registered /storyteller command");
     }
     
@@ -259,6 +268,54 @@ public class ModCommands {
         return 1;
     }
 
+    private static int listQuests(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (source.getEntity() == null) {
+            source.sendFailure(Component.literal("This command must be run as a player"));
+            return 0;
+        }
+
+        var quests = QuestManager.getActiveQuests(source.getEntity().getUUID());
+
+        if (quests.isEmpty()) {
+            source.sendSuccess(() -> Component.literal("§7You have no active quests."), false);
+            source.sendSuccess(() -> Component.literal("§7Talk to NPCs to receive quests!"), false);
+            return 0;
+        }
+
+        source.sendSuccess(() -> Component.literal("§6=== Your Active Quests ==="), false);
+
+        int index = 1;
+        for (var quest : quests) {
+            final int questNum = index++;
+            final String questDesc = quest.description();
+            final String progress = quest.type() == QuestManager.QuestType.KILL_MOB
+                ? " §e(" + quest.progress() + "/" + quest.targetCount() + ")"
+                : "";
+
+            source.sendSuccess(() -> Component.literal(
+                "§a[" + questNum + "]§r " + questDesc + progress
+            ), false);
+        }
+
+        return quests.size();
+    }
+
+    private static int clearQuests(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        if (source.getEntity() == null) {
+            source.sendFailure(Component.literal("This command must be run as a player"));
+            return 0;
+        }
+
+        QuestManager.clearQuests(source.getEntity().getUUID());
+        source.sendSuccess(() -> Component.literal("§aCleared all active quests."), true);
+
+        return 1;
+    }
+
     private static int showHelp(CommandContext<CommandSourceStack> context) {
         CommandSourceStack source = context.getSource();
 
@@ -270,6 +327,8 @@ public class ModCommands {
         source.sendSuccess(() -> Component.literal("§e/storyteller create <name> §7- Create new character"), false);
         source.sendSuccess(() -> Component.literal("§e/storyteller reload §7- Reload configurations"), false);
         source.sendSuccess(() -> Component.literal("§e/storyteller status §7- Show LLM connection status"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller quests §7- List your active quests"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller quests clear §7- Clear all quests"), false);
         source.sendSuccess(() -> Component.literal("§7Right-click an NPC to start chatting!"), false);
 
         return 1;

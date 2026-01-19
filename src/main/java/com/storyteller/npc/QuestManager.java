@@ -127,6 +127,14 @@ public class QuestManager {
     }
 
     /**
+     * Clear all active quests for a player
+     */
+    public static void clearQuests(UUID playerId) {
+        activeQuests.remove(playerId);
+        StorytellerMod.LOGGER.info("Cleared all quests for player {}", playerId);
+    }
+
+    /**
      * Check if any quests are completed and return them
      */
     public static List<Quest> checkQuestCompletion(ServerPlayer player) {
