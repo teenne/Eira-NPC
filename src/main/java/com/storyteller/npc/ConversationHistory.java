@@ -1,10 +1,19 @@
 package com.storyteller.npc;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.storyteller.StorytellerMod;
 import com.storyteller.config.ModConfig;
 import com.storyteller.llm.LLMProvider.ChatMessage;
 
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Stream;
 
 /**
  * Tracks conversation history between players and NPCs
@@ -148,5 +157,167 @@ public class ConversationHistory {
         }
         
         return summary.toString();
+    }
+
+    // ==================== Persistence Methods ====================
+
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static final String CONVERSATIONS_DIR = "conversations";
+
+    /**
+     * Data class for persisting a conversation
+     */
+    private record PersistedConversation(
+        String npcId,
+        String playerId,
+        List<PersistedMessage> messages,
+        int conversationCount
+    ) {}
+
+    /**
+     * Data class for persisted messages
+     */
+    private record PersistedMessage(
+        String role,
+        String content,
+        long timestamp
+    ) {
+        static PersistedMessage from(ChatMessage msg) {
+            return new PersistedMessage(
+                msg.role().name(),
+                msg.content(),
+                System.currentTimeMillis()
+            );
+        }
+
+        ChatMessage toChatMessage() {
+            return new ChatMessage(
+                ChatMessage.Role.valueOf(role),
+                content
+            );
+        }
+    }
+
+    /**
+     * Save all conversation histories to disk
+     */
+    public static void saveAllHistory(Path configDir) {
+        if (!ModConfig.COMMON.persistConversations.get()) {
+            return;
+        }
+
+        Path conversationsDir = configDir.resolve(CONVERSATIONS_DIR);
+        try {
+            Files.createDirectories(conversationsDir);
+
+            int saved = 0;
+            int maxMessages = ModConfig.COMMON.maxPersistedMessages.get();
+
+            for (var npcEntry : histories.entrySet()) {
+                UUID npcId = npcEntry.getKey();
+                for (var playerEntry : npcEntry.getValue().entrySet()) {
+                    UUID playerId = playerEntry.getKey();
+                    List<ChatMessage> messages = playerEntry.getValue();
+
+                    if (messages.isEmpty()) continue;
+
+                    // Limit messages to persist
+                    List<ChatMessage> toSave = messages.size() > maxMessages
+                        ? messages.subList(messages.size() - maxMessages, messages.size())
+                        : messages;
+
+                    int count = getConversationCount(npcId, playerId);
+
+                    PersistedConversation conversation = new PersistedConversation(
+                        npcId.toString(),
+                        playerId.toString(),
+                        toSave.stream().map(PersistedMessage::from).toList(),
+                        count
+                    );
+
+                    Path file = conversationsDir.resolve(npcId + "_" + playerId + ".json");
+                    Files.writeString(file, GSON.toJson(conversation));
+                    saved++;
+                }
+            }
+
+            StorytellerMod.LOGGER.info("Saved {} conversation histories to disk", saved);
+
+        } catch (IOException e) {
+            StorytellerMod.LOGGER.error("Failed to save conversation histories", e);
+        }
+    }
+
+    /**
+     * Load all conversation histories from disk
+     */
+    public static void loadAllHistory(Path configDir) {
+        if (!ModConfig.COMMON.persistConversations.get()) {
+            return;
+        }
+
+        Path conversationsDir = configDir.resolve(CONVERSATIONS_DIR);
+        if (!Files.exists(conversationsDir)) {
+            return;
+        }
+
+        try (Stream<Path> files = Files.list(conversationsDir)) {
+            int loaded = 0;
+
+            for (Path file : files.filter(p -> p.toString().endsWith(".json")).toList()) {
+                try {
+                    String json = Files.readString(file);
+                    PersistedConversation conversation = GSON.fromJson(json, PersistedConversation.class);
+
+                    if (conversation == null || conversation.messages() == null) continue;
+
+                    UUID npcId = UUID.fromString(conversation.npcId());
+                    UUID playerId = UUID.fromString(conversation.playerId());
+
+                    // Restore messages
+                    List<ChatMessage> messages = Collections.synchronizedList(new ArrayList<>());
+                    for (PersistedMessage pm : conversation.messages()) {
+                        messages.add(pm.toChatMessage());
+                    }
+
+                    histories.computeIfAbsent(npcId, k -> new ConcurrentHashMap<>())
+                             .put(playerId, messages);
+
+                    // Restore conversation count
+                    if (conversation.conversationCount() > 0) {
+                        conversationCounts.computeIfAbsent(npcId, k -> new ConcurrentHashMap<>())
+                                         .put(playerId, conversation.conversationCount());
+                    }
+
+                    loaded++;
+                } catch (Exception e) {
+                    StorytellerMod.LOGGER.warn("Failed to load conversation from {}: {}", file, e.getMessage());
+                }
+            }
+
+            StorytellerMod.LOGGER.info("Loaded {} conversation histories from disk", loaded);
+
+        } catch (IOException e) {
+            StorytellerMod.LOGGER.error("Failed to load conversation histories", e);
+        }
+    }
+
+    /**
+     * Clear all persisted conversation files
+     */
+    public static void clearPersistedHistory(Path configDir) {
+        Path conversationsDir = configDir.resolve(CONVERSATIONS_DIR);
+        if (!Files.exists(conversationsDir)) {
+            return;
+        }
+
+        try (Stream<Path> files = Files.list(conversationsDir)) {
+            for (Path file : files.filter(p -> p.toString().endsWith(".json")).toList()) {
+                Files.deleteIfExists(file);
+            }
+            StorytellerMod.LOGGER.info("Cleared all persisted conversation histories");
+        } catch (IOException e) {
+            StorytellerMod.LOGGER.error("Failed to clear persisted histories", e);
+        }
     }
 }
