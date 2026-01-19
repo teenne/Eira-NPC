@@ -1,6 +1,8 @@
 package com.storyteller.npc;
 
 import com.storyteller.StorytellerMod;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
@@ -39,8 +41,9 @@ public class QuestManager {
     /**
      * Parse NPC response for quest-like statements and create quests automatically
      */
-    public static List<Quest> parseQuestsFromResponse(UUID npcId, UUID playerId, String response) {
+    public static List<Quest> parseQuestsFromResponse(UUID npcId, ServerPlayer player, String response) {
         List<Quest> quests = new ArrayList<>();
+        UUID playerId = player.getUUID();
 
         // Try to detect item collection quests
         for (Pattern pattern : List.of(BRING_PATTERN, FIND_PATTERN, COLLECT_PATTERN)) {
@@ -89,9 +92,10 @@ public class QuestManager {
             quests.add(quest);
         }
 
-        // Register detected quests
+        // Register detected quests and notify player
         for (Quest quest : quests) {
             addQuest(playerId, quest);
+            notifyQuestAdded(player, quest);
             StorytellerMod.LOGGER.info("Auto-detected quest for {}: {}", playerId, quest.description());
         }
 
@@ -140,6 +144,7 @@ public class QuestManager {
                 active.remove(quest);
                 completedQuests.computeIfAbsent(player.getUUID(), k -> Collections.synchronizedList(new ArrayList<>()))
                     .add(quest);
+                notifyQuestCompleted(player, quest);
                 StorytellerMod.LOGGER.info("Quest completed for {}: {}", player.getName().getString(), quest.description());
             }
         }
@@ -198,10 +203,65 @@ public class QuestManager {
             for (Quest quest : active) {
                 if (quest.type() == QuestType.KILL_MOB && mobName.contains(quest.target())) {
                     quest.incrementProgress();
+                    notifyQuestProgress(player, quest);
                     StorytellerMod.LOGGER.debug("Quest progress: {} - {}/{}", quest.description(), quest.progress(), quest.targetCount());
                 }
             }
         }
+    }
+
+    // ==================== Notification Methods ====================
+
+    /**
+     * Notify player that a quest has been added
+     */
+    private static void notifyQuestAdded(ServerPlayer player, Quest quest) {
+        player.sendSystemMessage(
+            Component.literal("[")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal("Quest Added")
+                    .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD))
+                .append(Component.literal("] ")
+                    .withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(quest.description())
+                    .withStyle(ChatFormatting.WHITE))
+        );
+    }
+
+    /**
+     * Notify player of quest progress (for kill quests)
+     */
+    private static void notifyQuestProgress(ServerPlayer player, Quest quest) {
+        player.sendSystemMessage(
+            Component.literal("[")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal("Quest Progress")
+                    .withStyle(ChatFormatting.AQUA))
+                .append(Component.literal("] ")
+                    .withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(quest.description() + ": ")
+                    .withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(quest.progress() + "/" + quest.targetCount())
+                    .withStyle(ChatFormatting.YELLOW))
+        );
+    }
+
+    /**
+     * Notify player that a quest has been completed
+     */
+    private static void notifyQuestCompleted(ServerPlayer player, Quest quest) {
+        player.sendSystemMessage(
+            Component.literal("[")
+                .withStyle(ChatFormatting.GRAY)
+                .append(Component.literal("Quest Complete!")
+                    .withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD))
+                .append(Component.literal("] ")
+                    .withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(quest.description())
+                    .withStyle(ChatFormatting.WHITE))
+                .append(Component.literal(" \u2713")
+                    .withStyle(ChatFormatting.GREEN))
+        );
     }
 
     // Quest record
