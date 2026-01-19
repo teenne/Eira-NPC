@@ -1,6 +1,7 @@
 package com.storyteller.npc;
 
 import com.storyteller.StorytellerMod;
+import com.storyteller.config.ModConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
@@ -26,6 +27,11 @@ public class PlayerEventTracker {
      * Record a player event
      */
     public static void recordEvent(UUID playerId, PlayerEvent event) {
+        // Check if event tracking is enabled
+        if (!ModConfig.COMMON.enableEventTracking.get()) {
+            return;
+        }
+
         recentEvents.computeIfAbsent(playerId, k -> Collections.synchronizedList(new ArrayList<>()))
             .add(event);
 
@@ -40,13 +46,19 @@ public class PlayerEventTracker {
      * Get recent events for a player, filtering out expired ones
      */
     public static List<PlayerEvent> getRecentEvents(UUID playerId) {
+        // Return empty if event tracking is disabled
+        if (!ModConfig.COMMON.enableEventTracking.get()) {
+            return Collections.emptyList();
+        }
+
         List<PlayerEvent> events = recentEvents.getOrDefault(playerId, Collections.emptyList());
         long now = System.currentTimeMillis();
+        long expiryMs = ModConfig.COMMON.eventExpiryMinutes.get() * 60 * 1000L;
 
         // Filter expired events
         List<PlayerEvent> valid = new ArrayList<>();
         for (PlayerEvent event : events) {
-            if (now - event.timestamp() < EVENT_EXPIRY_MS) {
+            if (now - event.timestamp() < expiryMs) {
                 valid.add(event);
             }
         }
