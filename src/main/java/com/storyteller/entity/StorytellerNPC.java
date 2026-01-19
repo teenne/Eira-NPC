@@ -226,6 +226,9 @@ public class StorytellerNPC extends PathfinderMob {
         StorytellerMod.getInstance().getLLMManager()
             .chat(systemPrompt, history)
             .thenAccept(response -> {
+                StorytellerMod.LOGGER.info("NPC {} response: {}", getNPCDisplayName(),
+                    response.length() > 100 ? response.substring(0, 100) + "..." : response);
+
                 // Back on server, send response to player
                 if (player.isAlive() && player.connection != null) {
                     // Save to history (skip for greeting requests)
