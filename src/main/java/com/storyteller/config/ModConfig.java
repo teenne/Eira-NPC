@@ -47,6 +47,8 @@ public class ModConfig {
         public final ModConfigSpec.IntValue responseTimeout;
         public final ModConfigSpec.BooleanValue includeWorldContext;
         public final ModConfigSpec.IntValue thinkingIndicatorDelay;
+        public final ModConfigSpec.BooleanValue persistConversations;
+        public final ModConfigSpec.IntValue maxPersistedMessages;
         
         // Rate limiting
         public final ModConfigSpec.IntValue minTimeBetweenMessages;
@@ -118,7 +120,15 @@ public class ModConfig {
             thinkingIndicatorDelay = builder
                 .comment("Delay in ticks before showing 'thinking' particles (20 ticks = 1 second)")
                 .defineInRange("thinkingIndicatorDelay", 20, 0, 100);
-            
+
+            persistConversations = builder
+                .comment("Save conversation history to disk (survives server restarts)")
+                .define("persistConversations", true);
+
+            maxPersistedMessages = builder
+                .comment("Maximum messages to persist per player-NPC pair")
+                .defineInRange("maxPersistedMessages", 50, 10, 200);
+
             builder.pop();
             
             builder.comment("Rate Limiting").push("ratelimit");

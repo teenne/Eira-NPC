@@ -5,9 +5,11 @@ import com.storyteller.entity.ModEntities;
 import com.storyteller.integration.EiraIntegrationManager;
 import com.storyteller.llm.LLMManager;
 import com.storyteller.network.ModNetwork;
+import com.storyteller.npc.ConversationHistory;
 import com.storyteller.npc.NPCManager;
 import com.storyteller.npc.PlayerEventTracker;
 import com.storyteller.npc.QuestManager;
+import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
@@ -79,11 +81,18 @@ public class StorytellerMod {
         LOGGER.info("Storyteller: Server starting...");
         npcManager.loadNPCs();
         eiraManager.initialize();
+
+        // Load persisted conversation histories
+        ConversationHistory.loadAllHistory(FMLPaths.CONFIGDIR.get().resolve("storyteller"));
     }
     
     @SubscribeEvent
     public void onServerStopping(ServerStoppingEvent event) {
         LOGGER.info("Storyteller: Server stopping, cleaning up...");
+
+        // Save conversation histories before shutdown
+        ConversationHistory.saveAllHistory(FMLPaths.CONFIGDIR.get().resolve("storyteller"));
+
         llmManager.shutdown();
         npcManager.saveNPCs();
         eiraManager.shutdown();
