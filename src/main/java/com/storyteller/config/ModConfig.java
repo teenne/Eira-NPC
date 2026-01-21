@@ -68,6 +68,11 @@ public class ModConfig {
         public final ModConfigSpec.IntValue minTimeBetweenMessages;
         public final ModConfigSpec.IntValue maxMessagesPerMinute;
 
+        // Knowledge/RAG settings
+        public final ModConfigSpec.BooleanValue enableKnowledge;
+        public final ModConfigSpec.IntValue maxRetrievedEntries;
+        public final ModConfigSpec.IntValue minKeywordMatches;
+
         public CommonConfig(ModConfigSpec.Builder builder) {
             builder.comment("Storyteller NPC Configuration")
                    .push("llm");
@@ -202,6 +207,22 @@ public class ModConfig {
             maxMessagesPerMinute = builder
                 .comment("Maximum messages per player per minute (0 = unlimited)")
                 .defineInRange("maxMessagesPerMinute", 10, 0, 60);
+
+            builder.pop();
+
+            builder.comment("Knowledge Base / RAG Settings").push("knowledge");
+
+            enableKnowledge = builder
+                .comment("Enable knowledge base system for NPC-specific factual knowledge")
+                .define("enableKnowledge", true);
+
+            maxRetrievedEntries = builder
+                .comment("Maximum knowledge entries to retrieve per player message")
+                .defineInRange("maxRetrievedEntries", 3, 1, 10);
+
+            minKeywordMatches = builder
+                .comment("Minimum keyword matches required to include a knowledge entry")
+                .defineInRange("minKeywordMatches", 1, 1, 5);
 
             builder.pop();
 

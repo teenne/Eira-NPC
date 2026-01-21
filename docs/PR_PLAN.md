@@ -4,7 +4,7 @@ This document provides detailed implementation plans for upcoming PRs. Each sect
 
 ---
 
-## PR #9: Emotion/Mood System
+## PR #10: Emotion/Mood System
 
 ### Overview
 Add an emotion system that tracks NPC mood states and affects their responses. Emotions decay over time and can be influenced by conversation topics, player actions, and world events.
@@ -113,7 +113,7 @@ an angry NPC is more curt, etc.
 
 ---
 
-## PR #10: Custom Quest Rewards
+## PR #11: Custom Quest Rewards
 
 ### Overview
 Allow NPCs to give tangible rewards when quests are completed: items, experience, effects, or commands.
@@ -223,7 +223,7 @@ When quest completes:
 
 ---
 
-## PR #11: NPC-to-NPC Conversations
+## PR #12: NPC-to-NPC Conversations
 
 ### Overview
 NPCs can converse with each other autonomously, creating ambient storytelling. Players within range can observe these conversations.
@@ -340,7 +340,7 @@ public final ModConfigSpec.DoubleValue npcConversationChance;
 
 ---
 
-## PR #12: Voice Synthesis (TTS)
+## PR #13: Voice Synthesis (TTS)
 
 ### Overview
 Add text-to-speech capabilities so NPCs can speak their responses aloud using local TTS engines.
@@ -451,7 +451,7 @@ public class PiperProvider implements TTSProvider {
 
 ---
 
-## PR #13: Relationship System
+## PR #14: Relationship System
 
 ### Overview
 Track player-NPC relationships over time. Relationship quality affects NPC responses, available quests, and hidden agenda reveals.
@@ -578,11 +578,11 @@ When starting a new session, provide this context to Claude:
 Continue development on Storyteller NPCs mod.
 
 Current state:
-- PRs #1-8 merged (quests, persistence, behavior modes)
+- PRs #1-9 merged (quests, persistence, behavior modes, knowledge/RAG)
 - Build: ./gradlew build (passing)
 - Minecraft: 1.21.4, NeoForge 21.4.x, Java 21
 
-Next PR: #[NUMBER] - [NAME]
+Next PR: #10 - Emotion/Mood System
 See docs/PR_PLAN.md for implementation details.
 
 Key files:
@@ -590,6 +590,7 @@ Key files:
 - Config: src/main/java/com/storyteller/config/ModConfig.java
 - Commands: src/main/java/com/storyteller/command/ModCommands.java
 - LLM: src/main/java/com/storyteller/llm/LLMManager.java
+- Knowledge: src/main/java/com/storyteller/npc/knowledge/KnowledgeManager.java
 ```
 
 ---
@@ -597,17 +598,19 @@ Key files:
 ## PR Dependencies
 
 ```
-PR #9 (Emotion) ──────────────────┬──► PR #11 (NPC-to-NPC)
+PR #9 (Knowledge/RAG) ────────────────► Complete ✓
+
+PR #10 (Emotion) ─────────────────┬──► PR #12 (NPC-to-NPC)
                                   │
-                                  └──► PR #13 (Relationships)
+                                  └──► PR #14 (Relationships)
 
-PR #10 (Quest Rewards) ───────────────► Standalone
+PR #11 (Quest Rewards) ───────────────► Standalone
 
-PR #12 (TTS) ─────────────────────────► Standalone
+PR #13 (TTS) ─────────────────────────► Standalone
 ```
 
-PRs #10 and #12 can be developed in any order or in parallel.
-PRs #11 and #13 benefit from #9 being completed first.
+PRs #11 and #13 can be developed in any order or in parallel.
+PRs #12 and #14 benefit from #10 being completed first.
 
 ---
 

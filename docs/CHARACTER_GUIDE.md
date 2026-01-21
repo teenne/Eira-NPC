@@ -14,10 +14,11 @@ This guide explains how to create compelling AI-powered NPC characters for the S
 5. [Speech Patterns](#5-speech-patterns)
 6. [World Integration](#6-world-integration)
 7. [Behavior Modes](#7-behavior-modes)
-8. [Custom Skins](#8-custom-skins)
-9. [Best Practices](#9-best-practices)
-10. [Examples](#10-examples)
-11. [Troubleshooting](#11-troubleshooting)
+8. [Knowledge Bases (RAG)](#8-knowledge-bases-rag)
+9. [Custom Skins](#9-custom-skins)
+10. [Best Practices](#10-best-practices)
+11. [Examples](#11-examples)
+12. [Troubleshooting](#12-troubleshooting)
 
 ---
 
@@ -528,7 +529,125 @@ All behavior settings are automatically saved with the NPC and persist through:
 
 ---
 
-## 8. Custom Skins
+## 8. Knowledge Bases (RAG)
+
+Knowledge bases allow NPCs to have specific factual knowledge that they can retrieve based on player questions. This is a form of Retrieval-Augmented Generation (RAG) that uses keyword matching.
+
+### Why Use Knowledge Bases?
+
+Character personalities define *how* an NPC speaks and behaves, but knowledge bases define *what* they know. This is useful for:
+
+- **Information characters**: NPCs that need to share accurate information about organizations, places, or services
+- **Guide characters**: NPCs that answer questions about schedules, locations, or activities
+- **Lore keepers**: NPCs with detailed world knowledge that should be consistent
+
+### Creating a Knowledge Base
+
+1. Navigate to your Minecraft config folder:
+   ```
+   .minecraft/config/storyteller/knowledge/
+   ```
+
+2. Create a JSON file named after your character ID (e.g., `my-character.json`)
+
+3. Add knowledge entries:
+   ```json
+   {
+     "character_id": "my-character",
+     "entries": [
+       {
+         "id": "about-organization",
+         "category": "organization",
+         "keywords": ["what", "who", "about", "tell"],
+         "content": "We are an educational organization that teaches coding.",
+         "priority": 10
+       },
+       {
+         "id": "opening-hours",
+         "category": "practical",
+         "keywords": ["hours", "open", "when", "time"],
+         "content": "We are open Monday-Friday 9:00-17:00.",
+         "priority": 8
+       }
+     ]
+   }
+   ```
+
+### Knowledge Entry Fields
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique identifier for this entry |
+| `category` | Grouping for organization (e.g., "practical", "activities") |
+| `keywords` | Words that trigger this entry when found in player messages |
+| `content` | The factual information to provide to the NPC |
+| `priority` | Higher values are shown first when multiple entries match (default: 5) |
+
+### How Retrieval Works
+
+When a player asks a question:
+1. The player's message is split into words
+2. Each knowledge entry is scored by how many keywords match
+3. The top 3 matching entries (configurable) are included in the NPC's context
+4. The NPC uses this information to answer accurately
+
+### Keyword Tips
+
+**Good keywords:**
+- Common question words: "what", "who", "where", "when", "how"
+- Topic-specific terms: "hours", "activities", "location"
+- Synonyms: include both "workshop" and "class"
+
+**Example keyword strategies:**
+```json
+// For "What are your opening hours?"
+"keywords": ["hours", "open", "when", "time", "opening", "schedule"]
+
+// For "How can I join?"
+"keywords": ["join", "sign", "register", "participate", "involved"]
+
+// For "Where are you located?"
+"keywords": ["where", "location", "address", "find", "directions"]
+```
+
+### Testing Knowledge Retrieval
+
+Use the `/storyteller knowledge` commands to test:
+
+```
+# List all entries for a character
+/storyteller knowledge list my-character
+
+# Test what entries would match a message
+/storyteller knowledge test my-character "what are your opening hours"
+
+# Reload knowledge after editing files
+/storyteller knowledge reload
+```
+
+### Configuration
+
+Knowledge base settings in `storyteller-common.toml`:
+
+```toml
+[knowledge]
+# Enable knowledge base system
+enableKnowledge = true
+
+# Maximum knowledge entries to retrieve per message
+maxRetrievedEntries = 3
+
+# Minimum keyword matches required
+minKeywordMatches = 1
+```
+
+### Example: Eira Knowledge Base
+
+See `examples/eira-storyteller-knowledge.json` for a complete example of a knowledge base that gives an NPC detailed information about an educational organization.
+
+---
+
+## 9. Custom Skins
 
 ### Skin File Location
 
@@ -565,7 +684,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 9. Best Practices
+## 10. Best Practices
 
 ### DO ✓
 
@@ -597,7 +716,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 10. Examples
+## 11. Examples
 
 ### Example 1: The Mysterious Merchant
 
@@ -782,7 +901,7 @@ Resources for Minecraft skins:
 
 ---
 
-## 11. Troubleshooting
+## 12. Troubleshooting
 
 ### Character not appearing in spawn list
 
@@ -818,6 +937,22 @@ Resources for Minecraft skins:
 - Check filename matches exactly (case-sensitive)
 - Ensure file is valid PNG (64x64 or 64x32)
 - Try a different skin file to rule out corruption
+
+### Knowledge not being used
+
+- Verify file is in `config/storyteller/knowledge/`
+- Check filename matches character ID (e.g., `my-character.json` for character ID `my-character`)
+- Run `/storyteller knowledge reload` after editing
+- Test with `/storyteller knowledge test <character> <message>`
+- Check keywords include common question words
+- Verify `enableKnowledge` is `true` in config
+
+### Knowledge answers are wrong
+
+- Ensure `content` field has accurate information
+- Check that keywords are specific enough
+- Add more keywords to improve matching
+- Increase `priority` for important entries
 
 ---
 

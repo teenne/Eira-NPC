@@ -18,6 +18,7 @@ import com.storyteller.npc.NPCCharacter;
 import com.storyteller.npc.PlayerEventTracker;
 import com.storyteller.npc.QuestManager;
 import com.storyteller.npc.WorldContext;
+import com.storyteller.npc.knowledge.KnowledgeManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -322,7 +323,13 @@ public class StorytellerNPC extends PathfinderMob {
             }
             systemPrompt += "\n\n" + completedContext;
         }
-        
+
+        // Retrieve and inject relevant knowledge (RAG)
+        String knowledgeContext = KnowledgeManager.buildKnowledgeContext(npcChar.getId(), actualMessage);
+        if (knowledgeContext != null) {
+            systemPrompt += "\n\n" + knowledgeContext;
+        }
+
         // Send to LLM
         final boolean saveToHistory = !isGreeting;
         final ChatMessage originalUserMessage = isGreeting ? null : userMessage;

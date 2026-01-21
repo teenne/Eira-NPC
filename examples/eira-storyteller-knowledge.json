@@ -1,0 +1,117 @@
+{
+  "character_id": "eira-storyteller",
+  "entries": [
+    {
+      "id": "about-eira",
+      "category": "organization",
+      "keywords": ["what", "who", "eira", "organization", "about", "tell", "you"],
+      "content": "Eira is an educational organization based in Sandefjord, Norway. We create bridges between physical and digital worlds using Minecraft, sensors, lights, and interactive technology to make learning feel like adventure.",
+      "priority": 10
+    },
+    {
+      "id": "mission",
+      "category": "organization",
+      "keywords": ["mission", "goal", "purpose", "why", "vision", "believe"],
+      "content": "Our mission is to transform education through physical-digital integration. We believe learning should flow seamlessly between the world you touch and the worlds you explore digitally.",
+      "priority": 9
+    },
+    {
+      "id": "name-meaning",
+      "category": "organization",
+      "keywords": ["name", "meaning", "called", "eira", "mean"],
+      "content": "The name 'Eira' means 'earth' in Old Norse - it represents being grounded in the real, physical world while reaching into the digital realm. We are the bridge between these worlds.",
+      "priority": 8
+    },
+    {
+      "id": "location",
+      "category": "practical",
+      "keywords": ["where", "location", "address", "find", "visit", "located"],
+      "content": "Eira Hub is located in Sandefjord, Norway. Visit eirahub.no for directions, contact information, and to see our current projects.",
+      "priority": 8
+    },
+    {
+      "id": "opening-hours",
+      "category": "practical",
+      "keywords": ["hours", "open", "when", "time", "opening", "closed", "schedule"],
+      "content": "Eira Hub is open for scheduled workshops and events. We host regular sessions for schools and public workshops. Check eirahub.no for the current schedule and to book your visit.",
+      "priority": 8
+    },
+    {
+      "id": "activities-overview",
+      "category": "activities",
+      "keywords": ["activities", "do", "offer", "services", "provide"],
+      "content": "We offer coding workshops, Minecraft education sessions, physical computing with Arduino and sensors, interactive installation building, and teacher training programs. Each activity bridges the physical and digital worlds.",
+      "priority": 8
+    },
+    {
+      "id": "workshops",
+      "category": "activities",
+      "keywords": ["workshop", "workshops", "class", "classes", "session", "sessions"],
+      "content": "Our workshops range from beginner coding for children to advanced physical computing. Popular workshops include: Minecraft Redstone Engineering, Arduino Sensor Projects, Interactive Light Installations, and Game Design Basics.",
+      "priority": 7
+    },
+    {
+      "id": "minecraft-education",
+      "category": "activities",
+      "keywords": ["minecraft", "education", "school", "learn", "teaching", "educational"],
+      "content": "We use Minecraft as an educational platform where physical world events can trigger in-game responses. A button press in your classroom can open a door in Minecraft. An in-game achievement can light up a real lamp. This is learning through wonder.",
+      "priority": 7
+    },
+    {
+      "id": "physical-digital-bridge",
+      "category": "technology",
+      "keywords": ["bridge", "physical", "digital", "sensor", "button", "light", "connect", "relay"],
+      "content": "The Eira ecosystem connects physical installations to Minecraft through our relay system. Physical sensors, buttons, and switches can trigger events in Minecraft. NPC characters like me can sense when someone enters a real room. In-game events can activate lights, motors, and displays in the physical world.",
+      "priority": 7
+    },
+    {
+      "id": "for-schools",
+      "category": "audience",
+      "keywords": ["school", "teacher", "classroom", "student", "education", "curriculum"],
+      "content": "We work with schools to create immersive learning experiences. Teachers can integrate physical computing with curriculum, making abstract concepts tangible through interactive Minecraft installations. We provide teacher training and ready-to-use lesson plans.",
+      "priority": 7
+    },
+    {
+      "id": "for-museums",
+      "category": "audience",
+      "keywords": ["museum", "exhibit", "exhibition", "installation", "display", "science", "center"],
+      "content": "Museums and science centers use Eira technology to create interactive exhibits. Visitors can engage with Minecraft worlds through physical controls, creating memorable hands-on experiences that bridge the gap between digital content and physical interaction.",
+      "priority": 7
+    },
+    {
+      "id": "for-kids",
+      "category": "audience",
+      "keywords": ["kids", "children", "child", "young", "age", "years"],
+      "content": "Our programs are designed for curious minds of all ages, but we especially love working with children aged 8-16. We believe that when children see technology respond to their actions, when they feel the magic of connection, they become creators rather than just consumers.",
+      "priority": 7
+    },
+    {
+      "id": "get-involved",
+      "category": "community",
+      "keywords": ["join", "help", "involved", "contribute", "part", "participate", "volunteer"],
+      "content": "Anyone can be part of Eira! You don't need to be a programmer or an expert. Visit eirahub.no to learn about workshops, volunteer opportunities, and how to bring Eira technology to your school or organization. We welcome dreamers and builders alike.",
+      "priority": 6
+    },
+    {
+      "id": "contact",
+      "category": "practical",
+      "keywords": ["contact", "email", "reach", "touch", "talk", "speak"],
+      "content": "You can reach Eira through our website at eirahub.no. We're always excited to hear from educators, makers, and anyone curious about bridging worlds. Don't hesitate to reach out with questions or ideas!",
+      "priority": 6
+    },
+    {
+      "id": "technology-stack",
+      "category": "technology",
+      "keywords": ["technology", "tech", "arduino", "raspberry", "hardware", "software", "tools"],
+      "content": "We work with Arduino microcontrollers, Raspberry Pi computers, various sensors (motion, light, temperature, sound), LED systems, motors, and custom Minecraft mods. Our relay system enables HTTP-to-redstone communication for seamless physical-digital integration.",
+      "priority": 6
+    },
+    {
+      "id": "npc-about-me",
+      "category": "meta",
+      "keywords": ["you", "npc", "character", "avatar", "represent"],
+      "content": "I am Eira's digital ambassador - an AI-powered NPC created to share our story and answer questions. I exist in this Minecraft world as a living example of what we do: I am digital, but I can sense the physical world through our relay system. When you speak to me, you're experiencing the bridge between worlds that Eira creates.",
+      "priority": 5
+    }
+  ]
+}

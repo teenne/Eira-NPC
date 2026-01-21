@@ -60,6 +60,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Behavior settings persist through server restarts
   - Configurable defaults in `behavior_modes` config section
 
+- **Knowledge Bases / RAG** (PR #9)
+  - Give NPCs specific factual knowledge via keyword-based retrieval
+  - Knowledge stored in JSON files in `config/storyteller/knowledge/`
+  - Automatic keyword matching against player messages
+  - Top matching entries injected into NPC context for accurate answers
+  - New commands:
+    - `/storyteller knowledge reload` - Reload all knowledge bases
+    - `/storyteller knowledge reload <character>` - Reload specific character
+    - `/storyteller knowledge list <character>` - List knowledge entries
+    - `/storyteller knowledge test <character> <message>` - Test retrieval
+  - Configurable settings: `enableKnowledge`, `maxRetrievedEntries`, `minKeywordMatches`
+  - Example Eira knowledge base included with 16 entries
+
 - **Player Event Tracking**
   - NPCs react to recent player achievements (advancements, boss kills)
   - Notable mob kills tracked (Dragon, Wither, Warden, Evoker, etc.)

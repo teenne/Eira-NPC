@@ -12,6 +12,8 @@ import com.storyteller.entity.StorytellerNPC;
 import com.storyteller.npc.NPCCharacter;
 import com.storyteller.npc.NPCManager;
 import com.storyteller.npc.QuestManager;
+import com.storyteller.npc.knowledge.KnowledgeEntry;
+import com.storyteller.npc.knowledge.KnowledgeManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -69,6 +71,15 @@ public class ModCommands {
     private static final SuggestionProvider<CommandSourceStack> BEHAVIOR_MODE_SUGGESTIONS = (context, builder) -> {
         return SharedSuggestionProvider.suggest(
             Arrays.stream(NPCBehaviorMode.values()).map(NPCBehaviorMode::getId),
+            builder
+        );
+    };
+
+    private static final SuggestionProvider<CommandSourceStack> KNOWLEDGE_CHARACTER_SUGGESTIONS = (context, builder) -> {
+        NPCManager manager = StorytellerMod.getInstance().getNPCManager();
+        return SharedSuggestionProvider.suggest(
+            manager.getAllCharacters().values().stream()
+                .map(NPCCharacter::getId),
             builder
         );
     };
@@ -163,6 +174,31 @@ public class ModCommands {
                     // Hiding mode
                     .then(Commands.literal("hiding")
                         .executes(ModCommands::setBehaviorHiding)
+                    )
+                )
+            )
+
+            // Knowledge commands
+            .then(Commands.literal("knowledge")
+                .then(Commands.literal("reload")
+                    .executes(ModCommands::knowledgeReloadAll)
+                    .then(Commands.argument("character", StringArgumentType.string())
+                        .suggests(KNOWLEDGE_CHARACTER_SUGGESTIONS)
+                        .executes(ModCommands::knowledgeReloadCharacter)
+                    )
+                )
+                .then(Commands.literal("list")
+                    .then(Commands.argument("character", StringArgumentType.string())
+                        .suggests(KNOWLEDGE_CHARACTER_SUGGESTIONS)
+                        .executes(ModCommands::knowledgeList)
+                    )
+                )
+                .then(Commands.literal("test")
+                    .then(Commands.argument("character", StringArgumentType.string())
+                        .suggests(KNOWLEDGE_CHARACTER_SUGGESTIONS)
+                        .then(Commands.argument("message", StringArgumentType.greedyString())
+                            .executes(ModCommands::knowledgeTest)
+                        )
                     )
                 )
             )
@@ -417,6 +453,10 @@ public class ModCommands {
         source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> follow [player] §7- Follow a player"), false);
         source.sendSuccess(() -> Component.literal("§e/storyteller behavior <npc> hiding §7- Hide from players"), false);
         source.sendSuccess(() -> Component.literal("§7Use 'nearest' for <npc> to select closest NPC"), false);
+        source.sendSuccess(() -> Component.literal("§6=== Knowledge Commands ==="), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller knowledge reload §7- Reload all knowledge bases"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller knowledge list <character> §7- List knowledge entries"), false);
+        source.sendSuccess(() -> Component.literal("§e/storyteller knowledge test <character> <message> §7- Test retrieval"), false);
         source.sendSuccess(() -> Component.literal("§7Right-click an NPC to start chatting!"), false);
 
         return 1;
@@ -691,5 +731,129 @@ public class ModCommands {
         ), true);
 
         return 1;
+    }
+
+    // ==================== Knowledge Commands ====================
+
+    private static int knowledgeReloadAll(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+
+        KnowledgeManager.reloadAll();
+
+        List<String> loaded = KnowledgeManager.getLoadedCharacterIds();
+        source.sendSuccess(() -> Component.literal(
+            "§aReloaded " + loaded.size() + " knowledge base(s)"
+        ), true);
+
+        if (!loaded.isEmpty()) {
+            source.sendSuccess(() -> Component.literal(
+                "§7Characters with knowledge: " + String.join(", ", loaded)
+            ), false);
+        }
+
+        return 1;
+    }
+
+    private static int knowledgeReloadCharacter(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String characterId = StringArgumentType.getString(context, "character");
+
+        boolean success = KnowledgeManager.reload(characterId);
+
+        if (success) {
+            source.sendSuccess(() -> Component.literal(
+                "§aReloaded knowledge base for: " + characterId
+            ), true);
+            return 1;
+        } else {
+            source.sendFailure(Component.literal(
+                "No knowledge file found for: " + characterId +
+                "\n§7Expected: config/storyteller/knowledge/" + characterId + ".json"
+            ));
+            return 0;
+        }
+    }
+
+    private static int knowledgeList(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String characterId = StringArgumentType.getString(context, "character");
+
+        if (!KnowledgeManager.hasKnowledgeBase(characterId)) {
+            source.sendFailure(Component.literal(
+                "No knowledge base found for: " + characterId
+            ));
+            return 0;
+        }
+
+        var kb = KnowledgeManager.getForCharacter(characterId);
+        if (kb == null) {
+            source.sendFailure(Component.literal("Knowledge base is disabled or unavailable"));
+            return 0;
+        }
+
+        source.sendSuccess(() -> Component.literal(
+            "§6=== Knowledge Base: " + characterId + " ==="
+        ), false);
+
+        source.sendSuccess(() -> Component.literal(
+            "§eEntries: " + kb.getEntryCount()
+        ), false);
+
+        int index = 1;
+        for (KnowledgeEntry entry : kb.getEntries()) {
+            final int num = index++;
+            final String id = entry.id();
+            final String category = entry.category();
+            final int priority = entry.priority();
+            final String keywords = String.join(", ", entry.keywords());
+
+            source.sendSuccess(() -> Component.literal(
+                "§a[" + num + "]§r " + id + " §7(cat: " + category + ", pri: " + priority + ")"
+            ), false);
+            source.sendSuccess(() -> Component.literal(
+                "    §7Keywords: " + keywords
+            ), false);
+        }
+
+        return kb.getEntryCount();
+    }
+
+    private static int knowledgeTest(CommandContext<CommandSourceStack> context) {
+        CommandSourceStack source = context.getSource();
+        String characterId = StringArgumentType.getString(context, "character");
+        String message = StringArgumentType.getString(context, "message");
+
+        if (!KnowledgeManager.hasKnowledgeBase(characterId)) {
+            source.sendFailure(Component.literal(
+                "No knowledge base found for: " + characterId
+            ));
+            return 0;
+        }
+
+        List<KnowledgeEntry> results = KnowledgeManager.retrieve(characterId, message);
+
+        source.sendSuccess(() -> Component.literal(
+            "§6=== Knowledge Test: " + characterId + " ==="
+        ), false);
+        source.sendSuccess(() -> Component.literal(
+            "§7Query: \"" + message + "\""
+        ), false);
+        source.sendSuccess(() -> Component.literal(
+            "§eResults: " + results.size()
+        ), false);
+
+        if (results.isEmpty()) {
+            source.sendSuccess(() -> Component.literal(
+                "§7No matching knowledge entries found."
+            ), false);
+        } else {
+            for (KnowledgeEntry entry : results) {
+                source.sendSuccess(() -> Component.literal(
+                    "§a[" + entry.id() + "]§r " + entry.content()
+                ), false);
+            }
+        }
+
+        return results.size();
     }
 }

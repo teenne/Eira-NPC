@@ -10,7 +10,7 @@ This document tracks the development progress and planned features.
 | Phase | Status | Progress |
 |-------|--------|----------|
 | Phase 1: MVP | **Complete** | 100% |
-| Phase 2: Polish | 🔄 In Progress | 20% |
+| Phase 2: Polish | 🔄 In Progress | 40% |
 | Phase 3: Extended Features | ⏳ Planned | 0% |
 | Phase 4: Multi-Loader | ⏳ Future | 0% |
 
@@ -45,6 +45,7 @@ This document tracks the development progress and planned features.
 | #6 | Default characters | Merged |
 | #7 | Feature toggles, event tracking, item awareness | Merged |
 | #8 | NPC behaviour modes (stationary, anchored, follow, hiding) | Merged |
+| #9 | Knowledge bases / RAG system | Merged |
 
 ---
 
@@ -54,11 +55,11 @@ This document tracks the development progress and planned features.
 
 | PR | Feature | Priority | Complexity | Status |
 |----|---------|----------|------------|--------|
-| #9 | Emotion/mood system | High | Medium | Planned |
-| #10 | Custom quest rewards | Medium | Low | Planned |
-| #11 | NPC-to-NPC conversations | High | High | Planned |
-| #12 | Voice synthesis (TTS) | Medium | High | Planned |
-| #13 | Relationship system | Medium | Medium | Planned |
+| #10 | Emotion/mood system | High | Medium | Planned |
+| #11 | Custom quest rewards | Medium | Low | Planned |
+| #12 | NPC-to-NPC conversations | High | High | Planned |
+| #13 | Voice synthesis (TTS) | Medium | High | Planned |
+| #14 | Relationship system | Medium | Medium | Planned |
 
 ### Additional Polish Items
 
@@ -163,9 +164,10 @@ This document tracks the development progress and planned features.
 
 | Version | Scope | Status |
 |---------|-------|--------|
-| 0.8.0-beta | MVP + PRs #1-8 | Current |
-| 0.9.0-beta | + Emotion, Rewards (#9-10) | Planned |
-| 1.0.0 | + NPC-NPC, TTS, Relationships (#11-13) | Planned |
+| 0.8.0-beta | MVP + PRs #1-8 | Complete |
+| 0.9.0-beta | + Knowledge/RAG (#9) | **Current** |
+| 0.10.0-beta | + Emotion, Rewards (#10-11) | Planned |
+| 1.0.0 | + NPC-NPC, TTS, Relationships (#12-14) | Planned |
 | 1.1.0 | Quest chains, combat companion | Future |
 | 2.0.0 | Multi-loader support | Future |
 

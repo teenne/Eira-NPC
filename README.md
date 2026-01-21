@@ -17,7 +17,7 @@ Active maintenance means:
 - Security issues are addressed promptly
 - Pull requests are reviewed, though turnaround varies
 
----
+---run 
 
 ## Why This Project Exists
 
@@ -44,6 +44,7 @@ Storyteller NPCs was built with these principles:
 - **Custom skins**: Standard Minecraft skin format (64x64 PNG)
 - **Multiple LLM providers**: Ollama (local), Claude (Anthropic), OpenAI
 - **Behaviour modes**: Stationary, anchored to location, follow player, or hide from player
+- **Knowledge bases (RAG)**: Give NPCs specific factual knowledge via keyword-based retrieval
 - **Eira integration**: Redstone and webhook bridge for physical installations
 
 ### Non-Features
@@ -282,19 +283,20 @@ If you're building something similar—adventure maps, educational games, intera
 | Player event tracking | #7 | Done |
 | Item awareness | #7 | Done |
 | **NPC behaviour modes** | #8 | Done |
+| **Knowledge bases (RAG)** | #9 | Done |
 
 ### In Progress / Next Up
 
-| Feature | Priority | Complexity | Description |
-|---------|----------|------------|-------------|
-| Emotion/mood system | High | Medium | NPCs have emotional states that affect responses |
-| NPC-to-NPC conversations | High | High | NPCs can talk to each other within earshot |
-| Voice synthesis (TTS) | Medium | High | Text-to-speech for NPC dialogue |
-| Relationship tracking | Medium | Medium | NPCs remember and react to relationship quality |
-| Combat companion mode | Medium | Medium | NPCs can fight alongside players |
-| Custom quest rewards | Medium | Low | NPCs give items/effects on quest completion |
-| In-game character editor | Low | Medium | GUI for creating characters without JSON |
-| Fabric/Forge ports | Low | High | Multi-loader support |
+| Feature | PR | Priority | Complexity | Description |
+|---------|-----|----------|------------|-------------|
+| Emotion/mood system | #10 | High | Medium | NPCs have emotional states that affect responses |
+| Custom quest rewards | #11 | Medium | Low | NPCs give items/effects on quest completion |
+| NPC-to-NPC conversations | #12 | High | High | NPCs can talk to each other within earshot |
+| Voice synthesis (TTS) | #13 | Medium | High | Text-to-speech for NPC dialogue |
+| Relationship tracking | #14 | Medium | Medium | NPCs remember and react to relationship quality |
+| Combat companion mode | - | Medium | Medium | NPCs can fight alongside players |
+| In-game character editor | - | Low | Medium | GUI for creating characters without JSON |
+| Fabric/Forge ports | - | Low | High | Multi-loader support |
 
 ### Future Vision
 
@@ -355,19 +357,19 @@ If you're building something similar—adventure maps, educational games, intera
 
 Based on user value, technical feasibility, and dependencies:
 
-### Stage 1: Emotion System (PR #9)
+### Stage 1: Emotion System (PR #10)
 **Why first:** Foundational for making NPCs feel more alive. Affects response generation without complex dependencies.
 
-### Stage 2: Custom Quest Rewards (PR #10)
+### Stage 2: Custom Quest Rewards (PR #11)
 **Why second:** Completes the quest loop. Players need tangible rewards for engagement.
 
-### Stage 3: NPC-to-NPC Conversations (PR #11)
+### Stage 3: NPC-to-NPC Conversations (PR #12)
 **Why third:** High user value. Creates emergent storytelling. Requires emotion system to be meaningful.
 
-### Stage 4: Voice Synthesis (PR #12)
+### Stage 4: Voice Synthesis (PR #13)
 **Why fourth:** Major accessibility and immersion improvement. Can be developed in parallel.
 
-### Stage 5: Relationship System (PR #13)
+### Stage 5: Relationship System (PR #14)
 **Why fifth:** Builds on emotion system. Enables long-term engagement mechanics.
 
 See [docs/PR_PLAN.md](docs/PR_PLAN.md) for detailed implementation plans.

@@ -3,6 +3,7 @@ package com.storyteller.npc;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.storyteller.StorytellerMod;
+import com.storyteller.npc.knowledge.KnowledgeManager;
 import net.neoforged.fml.loading.FMLPaths;
 
 import java.io.IOException;
@@ -80,9 +81,12 @@ public class NPCManager {
                 characters.put(defaultChar.getId(), defaultChar);
                 saveCharacter(defaultChar);
             }
-            
+
             StorytellerMod.LOGGER.info("Loaded {} NPC character(s)", characters.size());
-            
+
+            // Load knowledge bases for RAG
+            KnowledgeManager.loadAll(configDir);
+
         } catch (IOException e) {
             StorytellerMod.LOGGER.error("Failed to load NPCs: {}", e.getMessage());
         }
