@@ -130,3 +130,18 @@ See `examples/` for complete character examples including Eira integration.
 - Default LLM is Ollama at `localhost:11434` - install and run `ollama pull mistral:7b-instruct`
 - LLM requests are async; responses handled via `CompletableFuture.thenAccept()`
 - Rate limiting configured in common config (default: 20 ticks between messages, 10/minute max)
+
+## Recommended Plugins
+
+Install these Claude Code plugins for optimal development experience:
+
+```bash
+# oh-my-claudecode - Multi-agent orchestration (27 agents, 28 skills)
+/plugin marketplace add https://github.com/Yeachan-Heo/oh-my-claudecode
+/plugin install oh-my-claudecode
+/oh-my-claudecode:omc-setup
+
+# frontend-design - Production-grade UI/UX (official Anthropic plugin)
+/plugin marketplace add anthropics/claude-code
+/plugin install frontend-design@claude-code-plugins
+```
